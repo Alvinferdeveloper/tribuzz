@@ -9,8 +9,9 @@ import {
     DialogDescription,
 } from '@/src/components/ui/dialog';
 import { Button } from '@/src/components/ui/button';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from '@/src/app/lib/i18n';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface ConfirmDialogProps {
     isOpen: boolean;
@@ -61,7 +62,7 @@ export function ConfirmDialog({
                         onClick={onConfirm}
                         disabled={isLoading}
                     >
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isLoading && <BubbleLoader size="sm" mono className="mr-2" />}
                         {confirmText ?? t('shared.confirm')}
                     </Button>
                 </DialogFooter>

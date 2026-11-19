@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
 import { Input } from "@/src/components/ui/input";
-import { Loader2, Search, Heart } from "lucide-react";
+import { Search, Heart } from "lucide-react";
 import { useGifSearch } from "@/src/app/chat/[id]/hooks/useGifSearch";
 import { useInfiniteScroll } from "@/src/app/hooks/useInfiniteScroll";
 import { cn } from "@/src/lib/utils";
 import { useAuth } from "@/src/app/hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface GifPickerProps {
     onSelect: (gifUrl: string, giphyId: string) => void;
@@ -105,7 +106,7 @@ export function GifPicker({ onSelect, favoriteGifs, toggleFavorite, loadingFavor
                 {activeTab === "favorites" ? (
                     loadingFavorites ? (
                         <div className="h-full flex items-center justify-center">
-                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                            <BubbleLoader size="md" />
                         </div>
                     ) : favoriteGifs.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center space-y-2 p-4">
@@ -143,7 +144,7 @@ export function GifPicker({ onSelect, favoriteGifs, toggleFavorite, loadingFavor
                     /* Search Tab View (Only accessible if ENABLE_GIPHY is true) */
                     loading && gifs.length === 0 ? (
                         <div className="h-full flex items-center justify-center">
-                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                            <BubbleLoader size="md" />
                         </div>
                     ) : (
                         <>
@@ -175,7 +176,7 @@ export function GifPicker({ onSelect, favoriteGifs, toggleFavorite, loadingFavor
                                 ))}
                             </div>
                             <div ref={sentinelRef} className="h-10 flex items-center justify-center w-full mt-2">
-                                {loadingMore && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                                {loadingMore && <BubbleLoader size="sm" mono />}
                             </div>
                         </>
                     )

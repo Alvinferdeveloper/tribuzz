@@ -4,7 +4,7 @@ import { AuthGuard } from "@/src/app/components/auth/AuthGuard";
 import { useTranslation } from 'react-i18next';
 import { useMyRooms } from '@/src/app/tribus/my-rooms/hooks/useMyRooms';
 import { RoomCard } from '@/src/app/tribus/components/RoomCard';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -13,6 +13,7 @@ import { useInfiniteScroll } from '@/src/app/hooks/useInfiniteScroll';
 import RoomCardFooter from '@/src/app/tribus/my-rooms/components/RoomCardFooter';
 import { RoomStatus } from '@/src/app/tribus/hooks/useRoom';
 import { cn } from '@/src/lib/utils';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 type StatusTab = RoomStatus | 'ALL';
 const STATUS_TABS: StatusTab[] = ['ALL', 'IN_REVISION', 'ACCEPTED', 'REJECTED'];
@@ -45,9 +46,8 @@ export default function MyRoomsPage() {
 
     if (loading && rooms.length === 0) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <p className="text-muted-foreground animate-pulse">{t('rooms.my-rooms.loading')}</p>
+            <div className="min-h-[70dvh] flex items-center justify-center">
+                <BubbleLoader size="lg" label={t('rooms.my-rooms.loading')} />
             </div>
         );
     }
@@ -98,7 +98,7 @@ export default function MyRoomsPage() {
                     {rooms.length === 0 && !loading ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-muted/20 rounded-xl border border-dashed border-border">
                             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                                <Loader2 className="h-8 w-8 text-muted-foreground" />
+                                <LayoutGrid className="h-8 w-8 text-muted-foreground" />
                             </div>
                             <div className="space-y-2">
                                 <h2 className="text-xl font-semibold text-foreground">
@@ -139,10 +139,7 @@ export default function MyRoomsPage() {
 
                             <div ref={sentinelRef} className="flex justify-center items-center h-20">
                                 {loading && rooms.length > 0 && (
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        <span>{t('rooms.load_more.loading')}</span>
-                                    </div>
+                                    <BubbleLoader size="md" label={t('rooms.load_more.loading')} />
                                 )}
                                 {!loading && !hasMore && rooms.length > 0 && (
                                     <p className="text-muted-foreground">{t('rooms.my-rooms.end')}</p>

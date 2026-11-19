@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { Loader2, Play, Pause } from "lucide-react";
+import { Play, Pause } from "lucide-react";
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 export function AudioPlayer({ url, isUploading, duration }: { url: string; isUploading?: boolean; duration?: number }) {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -37,7 +38,7 @@ export function AudioPlayer({ url, isUploading, duration }: { url: string; isUpl
                 className="w-10 h-10 shrink-0 rounded-full bg-current/15 flex items-center justify-center hover:bg-current/25 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
                 {isUploading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <BubbleLoader size="sm" mono />
                 ) : isPlaying ? (
                     <Pause className="w-5 h-5 fill-current" />
                 ) : (

@@ -3,7 +3,7 @@ import { Message, isTextMessage, isImageMessage, isAudioMessage, isGifMessage, R
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
 import { Button } from "@/src/components/ui/button";
 import Link from "next/link";
-import { Reply, ChevronRight, SmilePlus, Loader2, Heart, Megaphone, ShieldCheck, Pencil, Trash2 } from "lucide-react";
+import { Reply, ChevronRight, SmilePlus, Heart, Megaphone, ShieldCheck, Pencil, Trash2 } from "lucide-react";
 import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useLongPress } from "@/src/app/chat/[id]/hooks/useLongPress";
 import { useHover } from "@/src/app/hooks/useHover";
@@ -15,6 +15,7 @@ import { AudioPlayer } from "@/src/app/chat/[id]/components/AudioPlayer";
 import { useAuth } from "@/src/app/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { tribeTone } from "@/src/app/utils/tribeColor";
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface User {
     id: string;
@@ -269,7 +270,7 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
                     />
                     {msg.isUploading && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                            <Loader2 className="w-8 h-8 text-white animate-spin" />
+                            <BubbleLoader size="md" />
                         </div>
                     )}
                     {msg.description && <p className="p-2 text-sm">{msg.description}</p>}

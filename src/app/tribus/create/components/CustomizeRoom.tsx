@@ -4,11 +4,12 @@ import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCreateRoom } from '../hooks/useCreateRoom';
 import { Button } from '@/src/components/ui/button';
-import { Loader2, Upload, Image as ImageIcon, CheckCircle2, Eye, ArrowRight, CheckCircle } from 'lucide-react';
+import { Upload, Image as ImageIcon, CheckCircle2, Eye, ArrowRight, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/src/components/ui/card';
 import SuccessDialog from '@/src/app/tribus/create/components/SuccessDialog';
 import { cn } from '@/src/lib/utils';
 import { useRouter } from 'next/navigation';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface RoomData {
     id: string;
@@ -100,10 +101,7 @@ export function CustomizeRoom({ room }: CustomizeRoomProps) {
                                 )}
                             >
                                 {uploading === 'banner' ? (
-                                    <div className="flex flex-col items-center animate-pulse">
-                                        <Loader2 className="h-6 w-6 animate-spin text-primary mb-2" />
-                                        <p className="text-xs text-muted-foreground">{t('rooms.create.customize.uploading')}</p>
-                                    </div>
+                                    <BubbleLoader size="md" label={t('rooms.create.customize.uploading')} />
                                 ) : bannerPreview ? (
                                     <>
                                         <img src={bannerPreview} alt="Banner Preview" className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-30 transition-opacity" />
@@ -141,7 +139,7 @@ export function CustomizeRoom({ room }: CustomizeRoomProps) {
                                     )}
                                 >
                                     {uploading === 'icon' ? (
-                                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                        <BubbleLoader size="md" />
                                     ) : iconPreview ? (
                                         <>
                                             <img src={iconPreview} alt="Icon" className="absolute inset-0 w-full h-full object-cover" />
@@ -175,7 +173,7 @@ export function CustomizeRoom({ room }: CustomizeRoomProps) {
                         className="w-full cursor-pointer h-12 text-base shadow-lg shadow-primary/20"
                         size="lg"
                     >
-                        {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                        {isUploading ? <BubbleLoader size="sm" mono className="mr-2" /> : <CheckCircle className="mr-2 h-4 w-4" />}
                         {t('rooms.create.customize.finalize')}
                         <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>

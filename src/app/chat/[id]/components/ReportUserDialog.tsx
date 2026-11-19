@@ -12,7 +12,6 @@ import {
 import { Button } from '@/src/components/ui/button';
 import { Textarea } from '@/src/components/ui/textarea';
 import {
-    Loader2,
     MessageSquare,
     ShieldAlert,
     EyeOff,
@@ -24,6 +23,7 @@ import {
 import { cn } from '@/src/lib/utils';
 import { useReportUser, ReportReason } from '../hooks/useReportUser';
 import { useTranslation } from 'react-i18next';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface ReportOption {
     id: ReportReason;
@@ -181,7 +181,7 @@ export function ReportUserDialog({ isOpen, onClose, reportedUsername, reportedUs
                             >
                                 {isSubmitting ? (
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <BubbleLoader size="sm" mono className="mr-2" />
                                         {t('chat.report.sending')}
                                     </>
                                 ) : (

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useRoom from '@/src/app/tribus/hooks/useRoom';
 import { AuthGuard } from "@/src/app/components/auth/AuthGuard";
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useInfiniteScroll } from '@/src/app/hooks/useInfiniteScroll';
 import { RoomCard } from '@/src/app/tribus/components/RoomCard';
 import { useRoomUserCounts } from '@/src/app/tribus/hooks/useRoomUserCounts';
@@ -13,6 +13,7 @@ import { SearchBar } from '@/src/app/tribus/components/SearchBar';
 import { useDebounce } from '@/src/app/hooks/useDebounce';
 import { Button } from '@/src/components/ui/button';
 import Link from 'next/link';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 export default function FavoritesPage() {
     const { t } = useTranslation();
@@ -74,7 +75,7 @@ export default function FavoritesPage() {
                     </main>
 
                     <div ref={sentinelRef} className="flex justify-center items-center h-20">
-                        {loading && <Loader2 className="h-8 w-8 animate-spin text-primary" />}
+                        {loading && <BubbleLoader size="md" />}
                         {!loading && !hasMore && rooms.length > 0 && (
                             <p className="text-muted-foreground">{t('rooms.favorites.end')}</p>
                         )}

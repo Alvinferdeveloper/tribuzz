@@ -19,7 +19,8 @@ import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { Textarea } from "@/src/components/ui/textarea";
 import { Button } from "@/src/components/ui/button";
-import { Loader2, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface RoomEditDialogProps {
     room: Room;
@@ -199,7 +200,7 @@ export function RoomEditDialog({ room, open, onOpenChange, onUpdate, onUpdateCat
                         disabled={isSaving}
                         className="w-full"
                     >
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isSaving && <BubbleLoader size="sm" mono className="mr-2" />}
                         {t('rooms.edit.save')}
                     </Button>
                 </DialogFooter>
@@ -218,7 +219,7 @@ function ImageUploadField({ label, currentImage, isUploading, inputRef, onFileCh
                 className={`${isBanner ? 'h-24 w-full rounded-lg' : 'h-24 w-24 rounded-2xl'} border-2 border-dashed border-border flex items-center justify-center cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-[border-color,background-color] duration-150 overflow-hidden relative group`}
             >
                 {isUploading ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <BubbleLoader size="md" />
                 ) : currentImage ? (
                     <>
                         <img src={currentImage} alt={label} className="w-full h-full object-cover" />

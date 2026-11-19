@@ -1,7 +1,6 @@
 "use client"
 import { Button } from "@shadcn/button";
-import { ConnectingAnimation } from "@/components/animations/ConnectionAnimation";
-import { Flame } from "lucide-react";
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
@@ -14,19 +13,14 @@ export function ChatConnecting({ roomName }: ChatConnectingProps) {
     const router = useRouter();
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-            <div className="w-full max-w-md p-8 space-y-6 text-center">
-                <div className="flex items-center justify-center size-16 mx-auto mb-4 rounded-2xl bg-primary/12">
-                    <Flame className="w-7 h-7 text-primary" />
-                </div>
-                <h1 className="text-2xl font-semibold tracking-tight text-balance">
-                    {roomName
-                        ? t('chat.connecting.connecting_to', { topic: roomName })
-                        : t('chat.connecting.connecting_generic')}
-                </h1>
-                <ConnectingAnimation text={t('chat.connecting.establishing')} />
-                <p className="text-sm text-muted-foreground">
-                    {t('chat.connecting.connecting_users')}
-                </p>
+            <div className="w-full max-w-md p-8 flex flex-col items-center gap-5 text-center">
+                <BubbleLoader
+                    size="lg"
+                    label={roomName ? t('chat.connecting.connecting_to', { topic: roomName }) : t('chat.connecting.connecting_generic')}
+                />
+                {roomName && (
+                    <h1 className="text-2xl font-semibold tracking-tight text-balance">{roomName}</h1>
+                )}
                 <Button variant="outline" onClick={() => router.push("/tribus")} className="mt-4">
                     {t('chat.connecting.cancel')}
                 </Button>

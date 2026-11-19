@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { X, Check, Search } from 'lucide-react';
 import { Category } from '../hooks/useCategories';
 import { useCategorySearch } from '../hooks/useCategorySearch';
-import { Loader2 } from 'lucide-react';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface CategorySelectorProps {
     categories: Category[];
@@ -82,10 +82,7 @@ export function CategorySelector({ categories, selectedIds, onChange, loading }:
 
                     <div className="flex flex-wrap gap-1.5">
                         {showSearch && searchLoading || loading ? (
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                <span className="text-sm">{t('rooms.create.categories.loading')}</span>
-                            </div>
+                            <BubbleLoader size="sm" label={t('rooms.create.categories.loading')} />
                         ) : availableCategories.length === 0 ? (
                             <span className="text-muted-foreground text-sm">
                                 {showSearch && search ? t('rooms.create.categories.not_found') : t('rooms.create.categories.no_more')}

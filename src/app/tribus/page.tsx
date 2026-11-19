@@ -13,10 +13,11 @@ import { RoomSkeleton } from '@/src/app/tribus/components/RoomSkeleton';
 import { useCategories } from '@/src/app/tribus/create/hooks/useCategories';
 import { useRoomUserCounts } from '@/src/app/tribus/hooks/useRoomUserCounts';
 import { useDebounce } from '@/src/app/hooks/useDebounce';
-import { Search, X, Loader2, TriangleAlert, Compass } from 'lucide-react';
+import { Search, X, TriangleAlert, Compass } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { cn } from '@/src/lib/utils';
 import { APP_NAME } from '@/src/app/constants';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 
@@ -235,10 +236,7 @@ export default function Rooms() {
 
                         <div ref={sentinelRef} className="flex h-24 items-center justify-center">
                             {loading && rooms.length > 0 && (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Loader2 className="size-4 animate-spin" />
-                                    <span>{t('rooms.load_more.loading')}</span>
-                                </div>
+                                <BubbleLoader size="md" label={t('rooms.load_more.loading')} />
                             )}
                             {!loading && !hasMore && rooms.length > 0 && (
                                 <p className="text-sm text-muted-foreground">{t('rooms.load_more.no_more')}</p>

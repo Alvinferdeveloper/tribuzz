@@ -158,6 +158,31 @@
   --admin-profile-role: hsl(0 0% 64.9%);
 }
 
+/* Logo bubble hues (coral, violet, teal, sun). Global rather than scoped to
+   the app surface so brand pieces like BubbleLoader work on any route.
+   `*-ink` is the text-safe variant (>= 4.5:1 on the app background). */
+:root {
+  --tribe-coral: oklch(0.72 0.16 15);
+  --tribe-violet: oklch(0.68 0.18 300);
+  --tribe-teal: oklch(0.80 0.12 185);
+  --tribe-sun: oklch(0.87 0.15 92);
+  --tribe-coral-ink: oklch(0.52 0.18 18);
+  --tribe-violet-ink: oklch(0.50 0.19 300);
+  --tribe-teal-ink: oklch(0.49 0.09 190);
+  --tribe-sun-ink: oklch(0.52 0.11 70);
+}
+
+.dark {
+  --tribe-coral: oklch(0.70 0.15 15);
+  --tribe-violet: oklch(0.64 0.16 300);
+  --tribe-teal: oklch(0.72 0.11 185);
+  --tribe-sun: oklch(0.82 0.14 92);
+  --tribe-coral-ink: oklch(0.78 0.13 15);
+  --tribe-violet-ink: oklch(0.78 0.13 300);
+  --tribe-teal-ink: oklch(0.84 0.10 185);
+  --tribe-sun-ink: oklch(0.88 0.13 92);
+}
+
 /* ------------------------------------------------------------------
    Tribuzz app surface (tribus + chat)
    The base stays the app's dark navy: every neutral is tinted toward
@@ -188,15 +213,6 @@
   --input: oklch(0.87 0.016 258);
   --ring: oklch(0.56 0.19 18);
   --radius: 0.875rem;
-
-  --tribe-coral: oklch(0.72 0.16 15);
-  --tribe-violet: oklch(0.68 0.18 300);
-  --tribe-teal: oklch(0.80 0.12 185);
-  --tribe-sun: oklch(0.87 0.15 92);
-  --tribe-coral-ink: oklch(0.52 0.18 18);
-  --tribe-violet-ink: oklch(0.50 0.19 300);
-  --tribe-teal-ink: oklch(0.49 0.09 190);
-  --tribe-sun-ink: oklch(0.52 0.11 70);
 
   --bubble-other: oklch(0.995 0.003 255);
   --bubble-other-foreground: oklch(0.21 0.035 264);
@@ -250,15 +266,6 @@
   --border: oklch(0.29 0.038 265);
   --input: oklch(0.32 0.040 265);
   --ring: oklch(0.72 0.16 18);
-
-  --tribe-coral: oklch(0.70 0.15 15);
-  --tribe-violet: oklch(0.64 0.16 300);
-  --tribe-teal: oklch(0.72 0.11 185);
-  --tribe-sun: oklch(0.82 0.14 92);
-  --tribe-coral-ink: oklch(0.78 0.13 15);
-  --tribe-violet-ink: oklch(0.78 0.13 300);
-  --tribe-teal-ink: oklch(0.84 0.10 185);
-  --tribe-sun-ink: oklch(0.88 0.13 92);
 
   --bubble-other: oklch(0.24 0.042 265 / 0.94);
   --bubble-other-foreground: oklch(0.96 0.008 255);
@@ -363,6 +370,35 @@
 }
 .chip-rail::-webkit-scrollbar {
   display: none;
+}
+
+/* BubbleLoader animations.
+   - convo (md/lg): a little chat forms (left, right, left), each message
+     popping from its tail, then the thread clears and starts again.
+   - wave (sm): four message bubbles rise one after another, like typing. */
+@keyframes bubble-convo {
+  0% { transform: scale(0.4); opacity: 0; }
+  12% { transform: scale(1); opacity: 1; }
+  70% { transform: scale(1); opacity: 1; }
+  85%, 100% { transform: scale(0.9); opacity: 0; }
+}
+@keyframes bubble-wave {
+  0%, 60%, 100% { transform: translateY(0) scale(0.85); opacity: 0.6; }
+  30% { transform: translateY(-45%) scale(1); opacity: 1; }
+}
+@keyframes bubble-fade {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+.animate-bubble-convo {
+  animation: bubble-convo 2.4s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+}
+.animate-bubble-wave {
+  animation: bubble-wave 1.1s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-bubble-convo,
+  .animate-bubble-wave { animation: bubble-fade 1.6s ease-in-out infinite; }
 }
 
 /* Typing dots: a soft opacity wave instead of the bouncy default. */

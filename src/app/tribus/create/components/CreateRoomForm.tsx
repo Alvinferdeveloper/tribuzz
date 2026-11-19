@@ -11,8 +11,9 @@ import { Input } from '@/src/components/ui/input';
 import { Textarea } from '@/src/components/ui/textarea';
 import { Label } from '@/src/components/ui/label';
 import { CategorySelector } from './CategorySelector';
-import { Loader2, Type, FileText, AlignLeft, Rocket } from 'lucide-react';
+import { Type, FileText, AlignLeft, Rocket } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/src/components/ui/card';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 export interface RoomData {
     id: string;
@@ -124,7 +125,7 @@ export function CreateRoomForm({ onRoomCreated }: CreateRoomFormProps) {
                     <Button type="submit" disabled={loading} className="w-full cursor-pointer h-11 text-base shadow-lg shadow-primary/20">
                         {loading ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <BubbleLoader size="sm" mono className="mr-2" />
                                 {t('rooms.create.form.creating')}
                             </>
                         ) : (
