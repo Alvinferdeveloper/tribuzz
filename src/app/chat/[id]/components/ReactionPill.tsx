@@ -44,7 +44,7 @@ export function ReactionPill({ reaction, isMyMessage, onReact, onHoverChange }: 
 
     const tooltipLabel = formatReactionTooltip(reaction.users, reaction.emoji, t);
     const tooltipClassName = cn(
-        "absolute bottom-full mb-1.5 max-w-[220px] w-max rounded-lg border bg-background/95 backdrop-blur-sm shadow-md px-2.5 py-1 text-[11px] font-medium text-foreground pointer-events-none z-30",
+        "absolute bottom-full mb-1.5 max-w-[220px] w-max rounded-lg bg-popover ring-1 ring-border/70 shadow-[var(--menu-shadow)] px-2.5 py-1 text-[11px] font-medium text-popover-foreground pointer-events-none z-30",
         // Anchor to the edge facing the center of the screen instead of
         // centering on the pill - own-message reactions sit near the right
         // edge (others near the left), so a centered tooltip could overflow
@@ -70,13 +70,13 @@ export function ReactionPill({ reaction, isMyMessage, onReact, onHoverChange }: 
                     }
                     : longPressHandlers)}
                 className={cn(
-                    "flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] border-2 transition-transform hover:scale-110 active:scale-95 cursor-pointer",
-                    "bg-white dark:bg-zinc-800 shadow-md",
-                    isMyMessage ? "border-primary" : "border-muted"
+                    "flex items-center gap-1 h-6 px-2 rounded-full text-[11px] ring-1 transition-[transform,background-color] duration-150 ease-out hover:scale-105 active:scale-95 cursor-pointer",
+                    "bg-popover shadow-[0_1px_3px_var(--shadow-tint)]",
+                    isMyMessage ? "ring-primary/50" : "ring-border"
                 )}
             >
                 <span>{reaction.emoji}</span>
-                <span className={cn("font-bold", isMyMessage ? "text-primary" : "text-muted-foreground")}>
+                <span className={cn("font-semibold tabular-nums", isMyMessage ? "text-primary" : "text-muted-foreground")}>
                     {reaction.users.length}
                 </span>
             </button>

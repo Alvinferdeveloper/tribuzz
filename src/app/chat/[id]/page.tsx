@@ -123,7 +123,7 @@ export default function ChatPage() {
     const currentTheme = resolvedTheme || theme;
 
     return (
-        <div className="flex flex-col h-screen bg-transparent">
+        <div className="flex flex-col h-dvh bg-transparent">
             {mounted && (currentTheme === "light" ? <ParkBackground /> : <CampfireBackground />)}
             {notificationUser && (
                 <UserJoinedNotification
@@ -143,9 +143,9 @@ export default function ChatPage() {
                 <main className="flex-1 flex flex-col relative">
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
                         {mounted && (currentTheme === "light" ? (
-                            <TreeIllustration className="w-80 h-80 opacity-90" />
+                            <TreeIllustration className="w-72 h-72 opacity-45" />
                         ) : (
-                            hasHover && <CampfireLottie src="/illustrations/fire/animations/12345.json" className="w-64 h-64 opacity-80" />
+                            hasHover && <CampfireLottie src="/illustrations/fire/animations/12345.json" className="w-64 h-64 opacity-70" />
                         ))}
                     </div>
                     {/* This wrapper never scrolls itself - it's the fixed anchor for the
@@ -197,11 +197,17 @@ export default function ChatPage() {
                 </main>
 
                 {/* Desktop Sidebar */}
-                <aside className={cn(
-                    "hidden md:flex flex-col h-full transition-all duration-300 ease-in-out",
-                    isUserListVisible ? "w-[300px]" : "w-0"
-                )}>
-                    <UserList users={usersInRoom} typingUsers={typingUsers} />
+                <aside
+                    aria-hidden={!isUserListVisible}
+                    className={cn(
+                        "hidden md:flex flex-col h-full overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                        isUserListVisible ? "w-[300px]" : "w-0"
+                    )}
+                >
+                    {/* Fixed inner width so the list slides instead of reflowing while the column animates. */}
+                    <div className="w-[300px] h-full shrink-0">
+                        <UserList users={usersInRoom} typingUsers={typingUsers} />
+                    </div>
                 </aside>
 
                 {/* Mobile Overlay */}
@@ -209,9 +215,9 @@ export default function ChatPage() {
                     <>
                         <div
                             onClick={toggleUserList}
-                            className="fixed inset-0 z-20 bg-black/30 backdrop-blur-sm"
+                            className="fixed inset-0 z-[60] bg-[color:var(--overlay)] animate-in fade-in duration-200"
                         />
-                        <aside className="fixed top-0 right-0 z-30 h-full w-[300px] bg-background transition-transform duration-300 ease-in-out translate-x-0">
+                        <aside className="fixed top-0 right-0 z-[70] h-full w-[min(300px,85vw)] bg-background shadow-[-16px_0_40px_-16px_var(--shadow-tint)] animate-in slide-in-from-right duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]">
                             <UserList users={usersInRoom} typingUsers={typingUsers} />
                         </aside>
                     </>

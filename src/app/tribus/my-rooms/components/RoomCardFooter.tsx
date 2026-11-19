@@ -15,7 +15,7 @@ export default function RoomCardFooter({ room }: Props) {
     
     return (
         <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 text-gray-400">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Calendar className="h-3 w-3" />
                 <span>{formatDate(room.created_at)}</span>
             </div>

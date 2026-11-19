@@ -3,6 +3,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* `app:` targets the product surfaces (tribus explorer + chat) only. Those
+   routes set data-surface="app" on <html> (for portals like dialogs) and on
+   their wrapper (so SSR paints the brand tokens without a flash). The landing
+   never sets it, so brand-specific component styling never leaks there. */
+@custom-variant app (&:where([data-surface="app"], [data-surface="app"] *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -56,6 +62,23 @@
   --color-admin-profile-role: var(--admin-profile-role);
   --color-admin-dot: var(--admin-dot);
   --color-admin-nav-hover-bg: var(--admin-nav-hover-bg);
+  /* Tribuzz brand: the four speech-bubble hues from the logo. `*-ink` is the
+     text-safe variant (>= 4.5:1 on the app background in each theme). */
+  --color-tribe-coral: var(--tribe-coral);
+  --color-tribe-violet: var(--tribe-violet);
+  --color-tribe-teal: var(--tribe-teal);
+  --color-tribe-sun: var(--tribe-sun);
+  --color-tribe-coral-ink: var(--tribe-coral-ink);
+  --color-tribe-violet-ink: var(--tribe-violet-ink);
+  --color-tribe-teal-ink: var(--tribe-teal-ink);
+  --color-tribe-sun-ink: var(--tribe-sun-ink);
+  --color-bubble-other: var(--bubble-other);
+  --color-bubble-other-foreground: var(--bubble-other-foreground);
+  --color-chat-chrome: var(--chat-chrome);
+  --color-rail: var(--rail);
+  --color-presence: var(--presence);
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 :root {
@@ -135,6 +158,120 @@
   --admin-profile-role: hsl(0 0% 64.9%);
 }
 
+/* ------------------------------------------------------------------
+   Tribuzz app surface (tribus + chat)
+   The base stays the app's dark navy: every neutral is tinted toward
+   the same blue (hue ~264), in both themes. Light mode is a cool,
+   slightly dimmed off-white instead of pure #fff, so the chat isn't a
+   lightbox; the vividness lives in the coral primary and the four logo
+   hues, not in the backdrop.
+   ------------------------------------------------------------------ */
+:root[data-surface="app"],
+[data-surface="app"] {
+  --background: oklch(0.965 0.008 255);
+  --foreground: oklch(0.21 0.035 264);
+  --card: oklch(0.988 0.004 255);
+  --card-foreground: oklch(0.21 0.035 264);
+  --popover: oklch(0.99 0.004 255);
+  --popover-foreground: oklch(0.21 0.035 264);
+  --primary: oklch(0.56 0.19 18);
+  --primary-foreground: oklch(0.985 0.006 18);
+  --secondary: oklch(0.928 0.012 258);
+  --secondary-foreground: oklch(0.27 0.035 264);
+  --muted: oklch(0.932 0.011 258);
+  --muted-foreground: oklch(0.48 0.03 262);
+  --accent: oklch(0.918 0.015 258);
+  --accent-foreground: oklch(0.21 0.035 264);
+  --destructive: oklch(0.55 0.20 27);
+  --destructive-foreground: oklch(0.985 0.006 27);
+  --border: oklch(0.885 0.014 258);
+  --input: oklch(0.87 0.016 258);
+  --ring: oklch(0.56 0.19 18);
+  --radius: 0.875rem;
+
+  --tribe-coral: oklch(0.72 0.16 15);
+  --tribe-violet: oklch(0.68 0.18 300);
+  --tribe-teal: oklch(0.80 0.12 185);
+  --tribe-sun: oklch(0.87 0.15 92);
+  --tribe-coral-ink: oklch(0.52 0.18 18);
+  --tribe-violet-ink: oklch(0.50 0.19 300);
+  --tribe-teal-ink: oklch(0.49 0.09 190);
+  --tribe-sun-ink: oklch(0.52 0.11 70);
+
+  --bubble-other: oklch(0.995 0.003 255);
+  --bubble-other-foreground: oklch(0.21 0.035 264);
+  --chat-chrome: oklch(0.965 0.008 255 / 0.82);
+  --rail: oklch(0.935 0.012 258);
+  --presence: oklch(0.62 0.15 155);
+  --shadow-tint: oklch(0.30 0.05 264 / 0.10);
+
+  /* Component shape + feel (consumed by src/components/ui/*). Shapes echo the
+     logo's rounded speech bubbles; shadows are tinted, never pure black. */
+  --control-radius: 0.75rem;
+  --icon-radius: 9999px;
+  --press-scale: 0.97;
+  --field-h: 2.5rem;
+  --field-bg: var(--card);
+  --field-shadow: 0 0 #0000;
+  --card-radius: 1.25rem;
+  --card-shadow: 0 1px 2px var(--shadow-tint), 0 8px 24px -16px var(--shadow-tint);
+  --badge-radius: 9999px;
+  --dialog-radius: 1.5rem;
+  --dialog-shadow: 0 2px 6px var(--shadow-tint), 0 32px 64px -24px var(--shadow-tint);
+  --menu-radius: 0.875rem;
+  --menu-item-radius: 0.5rem;
+  --menu-shadow: 0 2px 6px var(--shadow-tint), 0 16px 32px -12px var(--shadow-tint);
+  --overlay: oklch(0.18 0.04 264 / 0.42);
+  --sheet-overlay: oklch(0.18 0.04 264 / 0.5);
+  --btn-primary-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 6px 16px -8px color-mix(in oklch, var(--primary) 70%, transparent);
+}
+
+/* Dark: the original navy (hsl 222 84% 5%, ~oklch(0.13 0.04 265)), lifted a
+   touch so cards, popovers and borders can separate from the page instead
+   of all sharing one flat value. */
+.dark[data-surface="app"],
+.dark [data-surface="app"] {
+  --background: oklch(0.145 0.040 265);
+  --foreground: oklch(0.96 0.008 255);
+  --card: oklch(0.19 0.042 265);
+  --card-foreground: oklch(0.96 0.008 255);
+  --popover: oklch(0.205 0.042 265);
+  --popover-foreground: oklch(0.96 0.008 255);
+  --primary: oklch(0.72 0.16 18);
+  --primary-foreground: oklch(0.20 0.030 18);
+  --secondary: oklch(0.25 0.040 265);
+  --secondary-foreground: oklch(0.96 0.008 255);
+  --muted: oklch(0.24 0.038 265);
+  --muted-foreground: oklch(0.72 0.03 258);
+  --accent: oklch(0.27 0.040 265);
+  --accent-foreground: oklch(0.96 0.008 255);
+  --destructive: oklch(0.62 0.19 25);
+  --destructive-foreground: oklch(0.98 0.005 25);
+  --border: oklch(0.29 0.038 265);
+  --input: oklch(0.32 0.040 265);
+  --ring: oklch(0.72 0.16 18);
+
+  --tribe-coral: oklch(0.70 0.15 15);
+  --tribe-violet: oklch(0.64 0.16 300);
+  --tribe-teal: oklch(0.72 0.11 185);
+  --tribe-sun: oklch(0.82 0.14 92);
+  --tribe-coral-ink: oklch(0.78 0.13 15);
+  --tribe-violet-ink: oklch(0.78 0.13 300);
+  --tribe-teal-ink: oklch(0.84 0.10 185);
+  --tribe-sun-ink: oklch(0.88 0.13 92);
+
+  --bubble-other: oklch(0.24 0.042 265 / 0.94);
+  --bubble-other-foreground: oklch(0.96 0.008 255);
+  --chat-chrome: oklch(0.145 0.040 265 / 0.74);
+  --rail: oklch(0.12 0.038 265);
+  --presence: oklch(0.74 0.15 155);
+  --shadow-tint: oklch(0.06 0.03 265 / 0.5);
+  --field-bg: color-mix(in oklch, var(--input) 45%, transparent);
+  --overlay: oklch(0.08 0.03 265 / 0.6);
+  --sheet-overlay: oklch(0.08 0.03 265 / 0.65);
+  --btn-primary-shadow: inset 0 1px 0 oklch(1 0 0 / 0.22), 0 6px 18px -8px color-mix(in oklch, var(--primary) 55%, transparent);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -189,10 +326,13 @@
 }
 
 /* Custom Scrollbar Styles */
+/* The tokens hold full color values (hsl()/oklch()), so wrapping them in
+   hsl(var(...)) produced an invalid color and the thumb fell back to the
+   browser default; color-mix works with any token format. */
 .scrollbar-thin-light {
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  scrollbar-color: color-mix(in oklch, var(--muted-foreground) 30%, transparent) transparent;
 }
 
 .scrollbar-thin-light::-webkit-scrollbar {
@@ -204,15 +344,45 @@
 }
 
 .scrollbar-thin-light::-webkit-scrollbar-thumb {
-  background-color: hsl(var(--muted-foreground) / 0.3);
+  background-color: color-mix(in oklch, var(--muted-foreground) 30%, transparent);
   border-radius: 20px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
 
 .scrollbar-thin-light::-webkit-scrollbar-thumb:hover {
-  background-color: hsl(var(--muted-foreground) / 0.6);
+  background-color: color-mix(in oklch, var(--muted-foreground) 60%, transparent);
   border: 2px solid transparent;
+}
+
+/* Horizontal chip rail: scrollable without a visible bar, fading out at the
+   edge so it reads as "there is more" instead of clipping mid-chip. */
+.chip-rail {
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, black calc(100% - 48px), transparent);
+}
+.chip-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Typing dots: a soft opacity wave instead of the bouncy default. */
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}
+.animate-typing-dot {
+  animation: typing-dot 1.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-surface="app"] .animate-typing-dot,
+  [data-surface="app"] .animate-cloud-drift,
+  [data-surface="app"] .animate-tree-sway,
+  [data-surface="app"] .animate-leaf-fall,
+  [data-surface="app"] .animate-sun-pulse,
+  [data-surface="app"] .animate-star-twinkle {
+    animation: none;
+  }
 }
 
 @keyframes float {

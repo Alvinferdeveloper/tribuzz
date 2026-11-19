@@ -7,28 +7,18 @@ import useRoom from '@/src/app/tribus/hooks/useRoom';
 import { AdditionalInfoModal } from '@/src/app/components/auth/AdditionalInfoModal';
 import { useAuth } from '@/src/app/hooks/useAuth';
 import { useInfiniteScroll } from '@/src/app/hooks/useInfiniteScroll';
-import { motion, Variants } from 'framer-motion';
-import { RoomCard } from '@/src/app/tribus/components/RoomCard';
+import { motion } from 'framer-motion';
+import { RoomCard, roomCardVariants } from '@/src/app/tribus/components/RoomCard';
 import { RoomSkeleton } from '@/src/app/tribus/components/RoomSkeleton';
 import { useCategories } from '@/src/app/tribus/create/hooks/useCategories';
-
 import { useRoomUserCounts } from '@/src/app/tribus/hooks/useRoomUserCounts';
 import { useDebounce } from '@/src/app/hooks/useDebounce';
-import { Search, X, Loader2 } from 'lucide-react';
+import { Search, X, Loader2, TriangleAlert, Compass } from 'lucide-react';
+import { Button } from '@/src/components/ui/button';
+import { cn } from '@/src/lib/utils';
 import { APP_NAME } from '@/src/app/constants';
 
-const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-        opacity: 1,
-        y: 0,
-        transition: {
-            delay: i * 0.05,
-            duration: 0.3,
-            ease: "easeOut"
-        }
-    })
-};
+const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 
 export default function Rooms() {
     const { t } = useTranslation();
@@ -36,14 +26,13 @@ export default function Rooms() {
     const [connecting, setConnecting] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const debouncedSearch = useDebounce(searchQuery, 500);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     const { rooms, error, loading, hasMore, loadMoreRooms, retry } = useRoom(debouncedSearch);
 
     const { sentinelRef } = useInfiniteScroll({ loading, hasMore, onLoadMore: loadMoreRooms });
     const { userCounts } = useRoomUserCounts();
     const { categories } = useCategories();
-    const searchContainerRef = useRef<HTMLDivElement>(null);
-    const [isSearchFocused, setIsSearchFocused] = useState(false);
 
     const { session, isPending } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,14 +46,17 @@ export default function Rooms() {
         }
     }, [isPending, isCompleteProfile, session?.user]);
 
+    // "/" focuses search, the same shortcut people know from GitHub, Slack, etc.
     useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
-                setIsSearchFocused(false);
-            }
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+            const target = e.target as HTMLElement | null;
+            if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return;
+            e.preventDefault();
+            searchInputRef.current?.focus();
         };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
     }, []);
 
     const handleProfileComplete = () => {
@@ -77,182 +69,205 @@ export default function Rooms() {
         router.push(`/chat/${roomId}`);
     };
 
-    const showInitialSkeleton = loading && rooms.length === 0;
+    const toggleCategory = (name: string) => {
+        setSearchQuery(current => current.trim().toLowerCase() === name.toLowerCase() ? '' : name);
+    };
 
-    const ErrorView = () => (
-        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            <div className="bg-destructive/10 p-4 rounded-full mb-4">
-                <svg className="h-12 w-12 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-            </div>
-            <h2 className="text-xl font-bold mb-2">{t('rooms.error.title')}</h2>
-            <p className="text-muted-foreground mb-6 max-w-md">{error}</p>
-            <button
-                onClick={retry}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-semibold"
-            >
-                {t('rooms.error.retry')}
-            </button>
-        </div>
-    );
+    const activeQuery = searchQuery.trim().toLowerCase();
+    const showInitialSkeleton = loading && rooms.length === 0;
+    const showEmpty = !loading && !error && rooms.length === 0;
 
     return (
-        <div className="bg-background min-h-screen">
+        <div className="min-h-screen bg-background">
             <AdditionalInfoModal
                 isOpen={isModalOpen}
                 onProfileComplete={handleProfileComplete}
             />
 
-            {/* HERO SECTION */}
-            <section className="relative w-full min-h-[360px] md:min-h-[550px] flex flex-col items-center justify-center px-6 py-12">
-                <div className="absolute inset-x-0 top-[-64px] bottom-0 z-0">
+            {/* HERO: the illustration is the brand moment of this page; the
+                content sits left on a scrim so it stays legible, and the bottom
+                melts into the page background instead of ending on a hard edge. */}
+            <section className="relative isolate w-full overflow-hidden">
+                <div className="absolute inset-0 -z-10">
                     <img
                         src="/illustrations/room_background.jpg"
                         alt=""
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover object-[60%_center]"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/30 to-black/20 dark:from-background/95 dark:via-background/60 dark:to-background/40" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.18_0.03_40/0.78)] via-[oklch(0.18_0.03_40/0.45)] to-[oklch(0.18_0.03_40/0.05)]" />
+                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-background to-transparent" />
                 </div>
 
-                <div className="relative z-10 w-full max-w-4xl flex flex-col items-center text-center">
+                <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 pt-14 pb-20 md:pt-24 md:pb-28">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] as const }}
+                        initial={{ opacity: 0, transform: 'translateY(12px)' }}
+                        animate={{ opacity: 1, transform: 'translateY(0px)' }}
+                        transition={{ duration: 0.45, ease: EASE_OUT }}
+                        className="max-w-xl"
                     >
-                        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md shadow-sm">
-                            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
-                            {t('rooms.hero.badge')}
-                        </div>
-                    </motion.div>
-
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] as const, delay: 0.1 }}
-                        className="relative text-white text-5xl md:text-[64px] font-black tracking-tight leading-[1.05] drop-shadow-xl after:block after:content-[''] after:w-14 after:h-1 after:bg-emerald-400/60 after:mx-auto after:mt-5 after:rounded-full"
-                    >
-                        {t('rooms.hero.title').split(APP_NAME).map((part, i, arr) => (
-                            <span key={i}>
-                                {part}
-                                {i < arr.length - 1 && <span className="text-primary">{APP_NAME}</span>}
+                        <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-[oklch(0.16_0.04_265/0.5)] px-3 py-1 text-xs font-semibold text-white/90 ring-1 ring-white/15">
+                            <span className="relative flex size-2">
+                                <span className="absolute inline-flex size-full rounded-full bg-presence/70 animate-ping [animation-duration:2.4s] motion-reduce:hidden" />
+                                <span className="relative inline-flex size-2 rounded-full bg-presence" />
                             </span>
-                        ))}
-                    </motion.h1>
+                            {t('rooms.hero.badge')}
+                        </p>
 
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] as const, delay: 0.2 }}
-                        className="text-white/85 text-base md:text-lg font-medium mt-5 max-w-2xl drop-shadow-md leading-relaxed"
-                    >
-                        {t('rooms.hero.subtitle')}
-                    </motion.p>
+                        <h1 className="text-balance text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl">
+                            {t('rooms.hero.title').split(APP_NAME).map((part, i, arr) => (
+                                <span key={i}>
+                                    {part}
+                                    {i < arr.length - 1 && <span className="text-tribe-sun">{APP_NAME}</span>}
+                                </span>
+                            ))}
+                        </h1>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] as const, delay: 0.3 }}
-                        className="w-full max-w-[680px] mt-8"
-                        ref={searchContainerRef}
-                    >
-                        <div className="relative flex items-center gap-2 rounded-xl border border-white/20 bg-white/15 backdrop-blur-md px-4 py-2 shadow-lg transition-all duration-200 focus-within:bg-white/20 focus-within:border-white/30">
-                            <Search className="w-5 h-5 text-white/70 shrink-0" />
+                        <p className="mt-4 max-w-md text-base leading-relaxed text-white/80 md:text-lg">
+                            {t('rooms.hero.subtitle')}
+                        </p>
+
+                        {/* Solid field, not frosted glass: it has to read instantly
+                            over a busy illustration in both themes. */}
+                        <label className="group mt-8 flex h-14 w-full items-center gap-3 rounded-2xl bg-card px-4 text-card-foreground shadow-[0_12px_32px_-12px_oklch(0.12_0.04_265/0.55)] ring-1 ring-black/5 transition-shadow duration-200 focus-within:ring-2 focus-within:ring-primary/60">
+                            <Search className="size-5 shrink-0 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                            <span className="sr-only">{t('rooms.search.placeholder')}</span>
                             <input
-                                type="text"
-                                className="w-full h-10 bg-transparent outline-none text-white placeholder:text-white/50 text-base"
+                                ref={searchInputRef}
+                                type="search"
+                                className="h-full w-full bg-transparent text-base outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
                                 placeholder={t('rooms.search.placeholder')}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                onFocus={() => setIsSearchFocused(true)}
                             />
-                            {searchQuery && (
+                            {searchQuery ? (
                                 <button
-                                    onClick={() => setSearchQuery('')}
-                                    className="p-1.5 text-white/60 hover:text-white cursor-pointer transition-colors"
+                                    type="button"
+                                    onClick={() => { setSearchQuery(''); searchInputRef.current?.focus(); }}
+                                    className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[background-color,color,transform] duration-150 hover:bg-accent hover:text-foreground active:scale-95"
+                                    aria-label={t('rooms.search.clear')}
                                 >
-                                    <X className="w-4 h-4" />
+                                    <X className="size-4" />
                                 </button>
+                            ) : (
+                                <kbd className="hidden h-6 min-w-6 items-center justify-center rounded-md border border-border px-1.5 text-xs font-semibold text-muted-foreground sm:inline-flex">
+                                    /
+                                </kbd>
                             )}
-                        </div>
-
-                        {isSearchFocused && !searchQuery && categories.length > 0 && (
-                            <div className="mt-2 rounded-xl border border-white/20 bg-white/15 backdrop-blur-md p-3 shadow-lg">
-                                <p className="text-xs text-white/60 font-medium mb-2 px-1">{t('rooms.search.suggestions')}</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {categories.map(category => (
-                                        <button
-                                            key={category.id}
-                                            onClick={() => { setSearchQuery(category.name); setIsSearchFocused(false); }}
-                                            className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/80 hover:bg-white/20 hover:text-white transition-colors cursor-pointer"
-                                        >
-                                            {category.icon && <span>{category.icon}</span>}
-                                            {category.name}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                        </label>
                     </motion.div>
                 </div>
             </section>
 
-            <div className="max-w-[1600px] mx-auto pt-4">
+            <div className="relative mx-auto max-w-[1400px] px-4 sm:px-6 -mt-4">
+                {/* Category rail: always visible (it used to appear only while the
+                    search was focused, so most people never saw it). */}
+                {categories.length > 0 && (
+                    <nav aria-label={t('rooms.search.suggestions')} className="chip-rail -mx-4 flex gap-2 overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0">
+                        <CategoryChip
+                            label={t('rooms.filter.all')}
+                            active={activeQuery === ''}
+                            onClick={() => setSearchQuery('')}
+                        />
+                        {categories.map(category => (
+                            <CategoryChip
+                                key={category.id}
+                                label={category.name}
+                                icon={category.icon}
+                                active={activeQuery === category.name.toLowerCase()}
+                                onClick={() => toggleCategory(category.name)}
+                            />
+                        ))}
+                    </nav>
+                )}
 
                 {error && rooms.length === 0 ? (
-                    <ErrorView />
+                    <div className="flex flex-col items-center px-4 py-20 text-center">
+                        <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+                            <TriangleAlert className="size-6" />
+                        </div>
+                        <h2 className="text-lg font-semibold">{t('rooms.error.title')}</h2>
+                        <p className="mt-1 mb-6 max-w-md text-sm text-muted-foreground">{error}</p>
+                        <Button onClick={retry}>{t('rooms.error.retry')}</Button>
+                    </div>
                 ) : (
                     <>
-                        <main className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6 pt-2">
-                            {showInitialSkeleton ? (
-                                [...Array(6)].map((_, i) => (
-                                    <RoomSkeleton key={i} />
-                                ))
-                            ) : (
-                                <>
-                                    {rooms.map((room, index) => (
-                                        <RoomCard
-                                            key={room.id}
-                                            room={room}
-                                            index={index}
-                                            userCount={userCounts[room.id] || 0}
-                                            isConnecting={connecting === room.id}
-                                            onJoin={handleJoinRoom}
-                                            cardVariants={cardVariants}
-                                        />
-                                    ))}
-                                </>
-                            )}
+                        <main className="grid grid-cols-1 gap-4 pt-6 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+                            {showInitialSkeleton
+                                ? [...Array(8)].map((_, i) => <RoomSkeleton key={i} />)
+                                : rooms.map((room, index) => (
+                                    <RoomCard
+                                        key={room.id}
+                                        room={room}
+                                        index={index}
+                                        userCount={userCounts[room.id] || 0}
+                                        isConnecting={connecting === room.id}
+                                        onJoin={handleJoinRoom}
+                                        cardVariants={roomCardVariants}
+                                    />
+                                ))}
                         </main>
 
-                        {error && rooms.length > 0 && (
-                            <div className="flex flex-col items-center p-6 bg-destructive/5 rounded-lg mx-6 mb-6">
-                                <p className="text-destructive font-medium mb-3">{error}</p>
-                                <button
-                                    onClick={retry}
-                                    className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors"
-                                >
-                                    {t('rooms.load_more.retry')}
-                                </button>
+                        {showEmpty && (
+                            <div className="flex flex-col items-center px-4 py-20 text-center">
+                                <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-tribe-teal/20 text-tribe-teal-ink">
+                                    <Compass className="size-6" />
+                                </div>
+                                <h2 className="text-lg font-semibold">{t('rooms.empty.title')}</h2>
+                                <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                                    {searchQuery ? t('rooms.empty.search', { query: searchQuery }) : t('rooms.empty.subtitle')}
+                                </p>
+                                {searchQuery && (
+                                    <Button variant="outline" className="mt-6" onClick={() => setSearchQuery('')}>
+                                        {t('rooms.empty.clear')}
+                                    </Button>
+                                )}
                             </div>
                         )}
 
-                        <div ref={sentinelRef} className="flex justify-center items-center h-20">
+                        {error && rooms.length > 0 && (
+                            <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl bg-destructive/5 p-6 text-center">
+                                <p className="text-sm font-medium text-destructive">{error}</p>
+                                <Button variant="outline" size="sm" onClick={retry}>
+                                    {t('rooms.load_more.retry')}
+                                </Button>
+                            </div>
+                        )}
+
+                        <div ref={sentinelRef} className="flex h-24 items-center justify-center">
                             {loading && rooms.length > 0 && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Loader2 className="size-4 animate-spin" />
                                     <span>{t('rooms.load_more.loading')}</span>
                                 </div>
                             )}
                             {!loading && !hasMore && rooms.length > 0 && (
-                                <p className="text-muted-foreground">{t('rooms.load_more.no_more')}</p>
+                                <p className="text-sm text-muted-foreground">{t('rooms.load_more.no_more')}</p>
                             )}
                         </div>
                     </>
                 )}
             </div>
         </div>
-    )
+    );
 }
 
+function CategoryChip({ label, icon, active, onClick }: { label: string; icon?: string | null; active: boolean; onClick: () => void }) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-pressed={active}
+            className={cn(
+                "inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 text-sm font-semibold",
+                "transition-[background-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.97]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+                active
+                    ? "bg-foreground text-background shadow-[0_4px_12px_-6px_var(--shadow-tint)]"
+                    : "bg-card text-muted-foreground ring-1 ring-border hover:text-foreground hover:ring-muted-foreground/40"
+            )}
+        >
+            {icon && <span aria-hidden="true">{icon}</span>}
+            {label}
+        </button>
+    );
+}

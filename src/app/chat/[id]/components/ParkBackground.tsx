@@ -10,34 +10,40 @@ interface Cloud {
     delay: number
 }
 
+/**
+ * Light-mode backdrop: a park in the late afternoon. The previous version was
+ * a saturated sky-300 sky over a cyan band with a glowing sun, which read as
+ * a lightbox behind the messages. Same scene, but low-chroma, slightly warm
+ * values and a paper veil on top, so the brand color lives in the
+ * conversation (bubbles, names) instead of in the glare.
+ */
 function ParkBackgroundComponent() {
     const [clouds, setClouds] = useState<Cloud[]>([])
 
     useEffect(() => {
-        const newClouds: Cloud[] = Array.from({ length: 6 }, (_, i) => ({
+        const newClouds: Cloud[] = Array.from({ length: 5 }, (_, i) => ({
             id: i,
-            y: 10 + Math.random() * 40,
-            scale: 0.5 + Math.random() * 1.5,
-            duration: 40 + Math.random() * 40,
-            delay: Math.random() * -60,
+            y: 6 + Math.random() * 30,
+            scale: 0.6 + Math.random() * 1.2,
+            duration: 70 + Math.random() * 50,
+            delay: Math.random() * -90,
         }))
         setClouds(newClouds)
     }, [])
 
     return (
         <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-            {/* Sky Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-sky-300 via-sky-200 to-emerald-50" />
+            {/* Sky: soft blue at the top easing into a warm, hazy horizon */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_bottom,oklch(0.87_0.04_235)_0%,oklch(0.915_0.03_215)_38%,oklch(0.945_0.03_95)_62%,oklch(0.93_0.035_120)_100%)]" />
 
-            {/* Sun */}
-            <div className="absolute top-10 right-1/3 w-32 h-32 rounded-full bg-yellow-200 blur-2xl opacity-60 animate-sun-pulse" />
-            <div className="absolute top-16 right-1/3 w-20 h-20 rounded-full bg-yellow-400 opacity-80 shadow-[0_0_50px_rgba(250,204,21,0.5)]" />
+            {/* Low sun: a warm disc with a wide, faint halo. No glow shadow. */}
+            <div className="absolute top-[9%] right-[22%] size-56 rounded-full bg-[oklch(0.95_0.07_85)] opacity-50 blur-3xl" />
+            <div className="absolute top-[13%] right-[26%] size-14 rounded-full bg-[oklch(0.95_0.08_88)] opacity-80" />
 
-            {/* Clouds */}
             {clouds.map((cloud) => (
                 <div
                     key={cloud.id}
-                    className="absolute text-white opacity-40 animate-cloud-drift"
+                    className="absolute text-[oklch(0.985_0.006_80)] opacity-60 animate-cloud-drift"
                     style={{
                         top: `${cloud.y}%`,
                         animationDuration: `${cloud.duration}s`,
@@ -53,42 +59,28 @@ function ParkBackgroundComponent() {
                 </div>
             ))}
 
-            {/* Mountains/Hills */}
+            {/* Hills: sage, receding with lower contrast in the distance */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <defs>
-                    <linearGradient id="hillGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#86efac" stopOpacity="0.8" />
-                        <stop offset="100%" stopColor="#4ade80" stopOpacity="0.8" />
-                    </linearGradient>
-                    <linearGradient id="hillGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#bbf7d0" stopOpacity="0.6" />
-                        <stop offset="100%" stopColor="#86efac" stopOpacity="0.6" />
-                    </linearGradient>
-                    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#6CBFE4" stopOpacity="1" />
-                        <stop offset="100%" stopColor="#6CBFE4" stopOpacity="1" />
-                    </linearGradient>
-                </defs>
-
                 <path
                     d="M0 60 Q20 50 40 58 Q60 48 80 55 Q95 50 100 60 L100 100 L0 100 Z"
-                    fill="url(#hillGrad2)"
+                    fill="oklch(0.86 0.05 140)"
                 />
-
                 <path
                     d="M0 70 Q25 60 50 68 Q75 58 100 68 L100 100 L0 100 Z"
-                    fill="url(#hillGrad1)"
+                    fill="oklch(0.80 0.07 145)"
                 />
-
                 <path
                     d="M0 85 Q15 83 30 85 Q50 81 70 84 Q90 82 100 85 L100 100 L0 100 Z"
-                    fill="url(#groundGrad)"
+                    fill="oklch(0.74 0.075 150)"
                 />
             </svg>
 
-            {/* Subtle Texture */}
+            {/* Paper veil: takes the edge off the whole scene and ties it to the
+                app's cool neutral, so cards and bubbles sit on it calmly. */}
+            <div className="absolute inset-0 bg-[oklch(0.965_0.01_255/0.42)]" />
+
             <div
-                className="absolute inset-0 opacity-[0.03]"
+                className="absolute inset-0 opacity-[0.035] mix-blend-multiply"
                 style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
                 }}

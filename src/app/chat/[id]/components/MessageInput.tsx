@@ -229,29 +229,28 @@ export function MessageInput({
     };
 
     return (
-        <div className="sticky bottom-0  p-4 border-t bg-transparent z-30 
-                        transition-[padding] duration-300 ease-in-out pb-[calc(1rem+var(--bottom-inset,0px))]">
+        <div className="sticky bottom-0 z-30 px-3 sm:px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px)+var(--bottom-inset,0px))] border-t border-border/60 bg-chat-chrome backdrop-blur-xl backdrop-saturate-150">
             {editingMessage && (
-                <div className="flex items-center justify-between p-2 mb-2 text-sm bg-primary/10 rounded-t-lg border-b border-primary/30">
-                    <div className="flex items-center gap-2">
-                        <Pencil className="h-4 w-4 text-primary" />
+                <div className="flex items-center justify-between gap-2 mb-2 pl-3 pr-1 py-1 text-sm rounded-2xl bg-primary/10 text-foreground animate-in fade-in slide-in-from-bottom-1 duration-200">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <Pencil className="h-4 w-4 text-primary shrink-0" />
                         <span>{t('chat.input.editing_message')}</span>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={cancelEdit} className="h-6 w-6 cursor-pointer">
+                    <Button variant="ghost" size="icon" onClick={cancelEdit} className="size-8" aria-label={t('chat.input.cancel_edit')}>
                         <X className="h-4 w-4" />
                     </Button>
                 </div>
             )}
             {replyingToMessage && !editingMessage && (
-                <div className="flex items-center justify-between p-2 mb-2 text-sm bg-muted rounded-t-lg border-b border-border">
-                    <div className="flex items-center gap-2">
-                        <ReplyIcon className="h-4 w-4 text-primary" />
+                <div className="flex items-center justify-between gap-2 mb-2 pl-3 pr-1 py-1 text-sm rounded-2xl bg-card ring-1 ring-border/60 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <ReplyIcon className="h-4 w-4 text-primary shrink-0" />
                         <span>{t('chat.input.replying_to')} <span className="font-semibold">{replyingToMessage.username}</span>:</span>
-                        <span className="truncate italic max-w-[200px]">
+                        <span className="truncate text-muted-foreground max-w-[200px]">
                             {isTextMessage(replyingToMessage) ? replyingToMessage.message : (isImageMessage(replyingToMessage) ? replyingToMessage.description : (isAudioMessage(replyingToMessage) ? t('chat.message.audio_fallback') : ''))}
                         </span>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={handleCancelReply} className="h-6 w-6 cursor-pointer">
+                    <Button variant="ghost" size="icon" onClick={handleCancelReply} className="size-8" aria-label={t('chat.input.cancel_reply')}>
                         <X className="h-4 w-4" />
                     </Button>
                 </div>
@@ -268,7 +267,7 @@ export function MessageInput({
                 {/* Pickers container with click-outside detection */}
                 <div ref={pickerRef}>
                     {showEmojiPicker && (
-                        <div className="absolute bottom-full mb-2 z-20">
+                        <div className="absolute bottom-full mb-2 z-20 origin-bottom-left animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-150">
                             <EmojiPicker
                                 onEmojiClick={onEmojiClick}
                                 theme={resolvedTheme === 'dark' ? EmojiPickerTheme.DARK : EmojiPickerTheme.LIGHT}
@@ -278,7 +277,7 @@ export function MessageInput({
                     )}
                     
                     {chat_gifs_enabled && showGifPicker && (
-                        <div className="absolute bottom-full mb-2 z-20">
+                        <div className="absolute bottom-full mb-2 z-20 origin-bottom-left animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-150">
                             <GifPicker
                                 onSelect={handleGifSelect}
                                 favoriteGifs={favoriteGifs}
@@ -300,14 +299,17 @@ export function MessageInput({
 
                 <div className="flex items-center gap-2">
                     {isRecording ? (
-                        <div className="flex-1 flex items-center justify-between px-4 h-10 bg-red-500/10 rounded-xl animate-pulse">
-                            <div className="flex items-center gap-2 text-red-500">
-                                <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                                <span className="text-sm font-bold uppercase tracking-tighter">{t('chat.input.recording_label')} {formatTime(recordingTime)}</span>
+                        <div className="flex-1 flex items-center justify-between pl-4 pr-2 h-11 bg-destructive/10 rounded-full">
+                            <div className="flex items-center gap-2 text-destructive">
+                                <span className="relative flex size-2">
+                                    <span className="absolute inline-flex size-full rounded-full bg-destructive/70 animate-ping motion-reduce:hidden" />
+                                    <span className="relative inline-flex size-2 rounded-full bg-destructive" />
+                                </span>
+                                <span className="text-sm font-semibold tabular-nums">{t('chat.input.recording_label')} {formatTime(recordingTime)}</span>
                             </div>
                             <button
                                 onClick={cancelRecording}
-                                className="text-xs font-bold text-gray-500 hover:text-gray-700 uppercase tracking-wider cursor-pointer"
+                                className="h-8 px-3 rounded-full text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer"
                             >
                                 {t('chat.input.cancel_recording')}
                             </button>
@@ -321,9 +323,10 @@ export function MessageInput({
                                         size="icon"
                                         variant="ghost"
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="flex-shrink-0 cursor-pointer"
+                                        className="flex-shrink-0 size-11"
+                                        aria-label={t('chat.input.attach_image')}
                                     >
-                                        <Paperclip className="h-5 w-5 text-muted-foreground" />
+                                        <Paperclip className="h-5 w-5" />
                                     </Button>
                                     <input
                                         type="file"
@@ -348,7 +351,7 @@ export function MessageInput({
                                         }
                                     }}
                                     placeholder={editingMessage ? t('chat.input.edit_placeholder') : t('chat.input.placeholder')}
-                                    className="pr-20 bg-background/90"
+                                    className="h-11 rounded-full pl-4 pr-22 bg-card dark:bg-card shadow-[0_1px_2px_var(--shadow-tint)] border-border/70"
                                 />
                                 <div className="absolute inset-y-0 right-0 flex items-center gap-0.5 px-1">
                                     {chat_gifs_enabled && (
@@ -360,9 +363,11 @@ export function MessageInput({
                                                 setShowGifPicker(!showGifPicker);
                                                 setShowEmojiPicker(false);
                                             }}
+                                            aria-label={t('chat.input.gif')}
+                                            aria-pressed={showGifPicker}
                                             className={cn(
-                                                "cursor-pointer",
-                                                showGifPicker ? "text-primary" : "text-muted-foreground"
+                                                "size-9",
+                                                showGifPicker && "text-primary bg-primary/10 hover:text-primary"
                                             )}
                                         >
                                             <Film className="h-4 w-4" />
@@ -376,9 +381,11 @@ export function MessageInput({
                                             setShowEmojiPicker(!showEmojiPicker);
                                             setShowGifPicker(false);
                                         }}
+                                        aria-label={t('chat.input.emoji')}
+                                        aria-pressed={showEmojiPicker}
                                         className={cn(
-                                            "cursor-pointer",
-                                            showEmojiPicker ? "text-primary" : "text-muted-foreground"
+                                            "size-9",
+                                            showEmojiPicker && "text-primary bg-primary/10 hover:text-primary"
                                         )}
                                     >
                                         <Smile className="h-5 w-5" />
@@ -392,7 +399,8 @@ export function MessageInput({
                         {isRecording ? (
                             <Button
                                 onClick={() => stopRecording()}
-                                className="h-10 w-10 cursor-pointer bg-red-500 hover:bg-red-600 text-white rounded-full shrink-0 shadow-lg shadow-red-500/20 transition-all"
+                                className="size-11 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-full shrink-0 shadow-none"
+                                aria-label={t('chat.input.stop_recording')}
                                 size="icon"
                             >
                                 <Mic className="h-5 w-5" />
@@ -404,8 +412,11 @@ export function MessageInput({
                                     size="icon"
                                     disabled={!newMessage.trim()}
                                     onMouseDown={(e) => e.preventDefault()}
-                                    className={`flex-shrink-0 transition-[background-color,box-shadow,transform] duration-200 ease-out active:scale-95 h-10 w-10 rounded-full cursor-pointer ${newMessage.trim() ? "bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" : "bg-muted text-muted-foreground"
-                                        }`}
+                                    aria-label={t('chat.input.save_edit')}
+                                    className={cn(
+                                        "flex-shrink-0 size-11 rounded-full active:scale-95 disabled:opacity-100",
+                                        newMessage.trim() ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground shadow-none"
+                                    )}
                                 >
                                     <Pencil className="w-4 h-4" />
                                 </Button>
@@ -416,7 +427,8 @@ export function MessageInput({
                                 onClick={startRecording}
                                 variant="ghost"
                                 size="icon"
-                                className="h-10 w-10 cursor-pointer text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full shrink-0 transition-colors"
+                                className="size-11 hover:text-primary hover:bg-primary/10 shrink-0"
+                                aria-label={t('chat.input.record_voice')}
                             >
                                 <Mic className="h-5 w-5" />
                             </Button>
@@ -427,8 +439,11 @@ export function MessageInput({
                                     size="icon"
                                     disabled={!newMessage.trim()}
                                     onMouseDown={(e) => e.preventDefault()} // Evita que el botón robe el foco del input
-                                    className={`flex-shrink-0 transition-[background-color,box-shadow,transform] duration-200 ease-out active:scale-95 h-10 w-10 rounded-full cursor-pointer ${newMessage.trim() ? "bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" : "bg-muted text-muted-foreground"
-                                        }`}
+                                    aria-label={t('chat.input.send')}
+                                    className={cn(
+                                        "flex-shrink-0 size-11 rounded-full active:scale-95 disabled:opacity-100",
+                                        newMessage.trim() ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground shadow-none"
+                                    )}
                                 >
                                     <Send className="w-4 h-4" />
                                 </Button>

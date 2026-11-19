@@ -1,5 +1,7 @@
 "use client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
+import { tribeTone } from "@/src/app/utils/tribeColor";
+import { cn } from "@/src/lib/utils";
 
 interface User {
     id: string;
@@ -26,7 +28,7 @@ export function RoomPresence({ users, onClick, maxVisible = 3 }: RoomPresencePro
     return (
         <button
             onClick={onClick}
-            className="hidden sm:flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95 shrink-0"
+            className="hidden sm:flex items-center gap-1.5 cursor-pointer rounded-full pl-1 pr-1 py-1 transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-95 shrink-0"
         >
             <div className="flex items-center -space-x-2">
                 {visibleUsers.map((user) => (
@@ -35,7 +37,7 @@ export function RoomPresence({ users, onClick, maxVisible = 3 }: RoomPresencePro
                             src={user.profileImage || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.username}`}
                             alt={user.username}
                         />
-                        <AvatarFallback className="text-[9px]">{user.username.charAt(0).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback className={cn("text-[9px]", tribeTone(user.username).soft)}>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                 ))}
             </div>

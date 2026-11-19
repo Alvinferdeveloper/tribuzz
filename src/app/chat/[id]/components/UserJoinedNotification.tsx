@@ -43,9 +43,9 @@ export function UserJoinedNotification({ username }: UserJoinedNotificationProps
                     }}
                     className="fixed top-3 left-1/2 -translate-x-1/2 z-[100]"
                 >
-                    <div className="flex items-center gap-2.5 rounded-full border border-border/50 bg-background/80 backdrop-blur-md px-4 py-2 shadow-lg">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                            <User className="h-3.5 w-3.5 text-primary" />
+                    <div className="flex items-center gap-2.5 rounded-full bg-popover/90 ring-1 ring-border/60 backdrop-blur-md pl-1.5 pr-4 py-1.5 shadow-[var(--menu-shadow)]">
+                        <div className="flex size-7 items-center justify-center rounded-full bg-presence/15">
+                            <User className="h-3.5 w-3.5 text-presence" />
                         </div>
                         <span className="text-sm font-medium text-foreground">
                             {t('chat.user_joined', { username })}

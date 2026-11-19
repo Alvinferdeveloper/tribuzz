@@ -11,6 +11,8 @@ import { RoomInfo } from "@/src/app/chat/[id]/hooks/useRoomInfo";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { APP_NAME } from "@/src/app/constants";
+import { cn } from "@/src/lib/utils";
+import { tribeTone } from "@/src/app/utils/tribeColor";
 
 interface User {
     id: string;
@@ -35,14 +37,14 @@ function RoomIcon({ roomName, roomIcon }: { roomName: string; roomIcon?: string 
             <img
                 src={roomIcon}
                 alt=""
-                className="w-6 h-6 rounded-full object-cover shrink-0"
+                className="size-7 rounded-lg object-cover shrink-0"
                 onError={() => setIconError(true)}
             />
         );
     }
 
     return (
-        <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-[11px] font-bold flex items-center justify-center shrink-0 select-none">
+        <span className={cn("size-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 select-none text-[oklch(0.2_0.04_265)]", tribeTone(roomName).fill)}>
             {(roomName || '?').charAt(0).toUpperCase()}
         </span>
     );
@@ -66,13 +68,13 @@ export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggle
     };
 
     return (
-        <header className="sticky top-0 z-50 h-14 sm:h-16 flex items-center justify-between px-3 sm:px-5 border-b border-white/[0.04] bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 gap-2">
+        <header className="sticky top-0 z-50 h-14 sm:h-16 flex items-center justify-between px-3 sm:px-5 border-b border-border/60 bg-chat-chrome backdrop-blur-xl backdrop-saturate-150 gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <Link href="/tribus" className="shrink-0">
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl text-muted-foreground hover:text-foreground transition-all duration-200 ease-out hover:bg-accent/50 active:scale-[0.92] cursor-pointer"
+                        className="size-9 text-muted-foreground hover:text-foreground hover:bg-accent active:scale-[0.92]"
                         aria-label={t('chat.header.back')}
                     >
                         <ArrowLeft className="w-4 h-4" />
@@ -82,7 +84,7 @@ export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggle
                 <button
                     onClick={() => room && setInfoOpen(true)}
                     disabled={!room}
-                    className="flex items-center gap-2.5 min-w-0 cursor-pointer disabled:cursor-default rounded-lg -mx-1.5 px-1.5 py-1 transition-colors hover:bg-accent/40 disabled:hover:bg-transparent"
+                    className="flex items-center gap-2.5 min-w-0 cursor-pointer disabled:cursor-default rounded-xl -mx-1.5 px-1.5 py-1 transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-[0.98] disabled:hover:bg-transparent disabled:active:scale-100"
                     aria-label={t('chat.header.room_info')}
                 >
                     <RoomIcon roomName={roomName ?? ''} roomIcon={room?.server_icon} />
@@ -92,23 +94,23 @@ export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggle
                     </h1>
 
                     <span className="relative flex w-1.5 h-1.5 sm:w-2 sm:h-2 shrink-0">
-                        <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400/60 animate-ping" style={{ animationDuration: '2s' }} />
-                        <span className="relative inline-flex w-full h-full rounded-full bg-emerald-500" />
+                        <span className="absolute inline-flex w-full h-full rounded-full bg-presence/60 animate-ping motion-reduce:hidden" style={{ animationDuration: '2.4s' }} />
+                        <span className="relative inline-flex w-full h-full rounded-full bg-presence" />
                     </span>
                 </button>
 
                 <RoomPresence users={usersInRoom} onClick={onToggleUserList} />
             </div>
 
-            <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={handleShare}
                     aria-label={t('chat.header.share')}
-                    className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl text-muted-foreground hover:text-foreground transition-all duration-200 ease-out hover:bg-accent/50 active:scale-[0.92] cursor-pointer"
+                    className="size-9 text-muted-foreground hover:text-foreground hover:bg-accent active:scale-[0.92]"
                 >
-                    {justCopied ? <Check className="h-4 w-4 text-emerald-500" /> : <Share2 className="h-4 w-4" />}
+                    {justCopied ? <Check className="h-4 w-4 text-presence" /> : <Share2 className="h-4 w-4" />}
                 </Button>
 
                 <Button
@@ -116,15 +118,18 @@ export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggle
                     size="icon"
                     onClick={onToggleUserList}
                     aria-label={t('chat.header.show_participants')}
-                    className={`h-8 w-8 sm:h-9 sm:w-9 rounded-xl transition-all duration-200 ease-out active:scale-[0.92] cursor-pointer ${isUserListVisible
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                        }`}
+                    aria-pressed={isUserListVisible}
+                    className={cn(
+                        "size-9 active:scale-[0.92]",
+                        isUserListVisible
+                            ? "bg-primary/12 text-primary hover:bg-primary/18 hover:text-primary"
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    )}
                 >
                     <Users className="h-4 w-4" />
                 </Button>
 
-                <div className="flex items-center">
+                <div className="flex items-center px-1 sm:px-1.5">
                     <ThemeToggle />
                 </div>
 
@@ -134,7 +139,7 @@ export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggle
                         width={40}
                         height={40}
                         alt={APP_NAME}
-                        className="w-8 h-8 sm:w-8 sm:h-8 object-contain opacity-70 hover:opacity-100 transition-opacity duration-200"
+                        className="size-7 object-contain opacity-80 hover:opacity-100 transition-opacity duration-200"
                     />
                 </Link>
             </div>

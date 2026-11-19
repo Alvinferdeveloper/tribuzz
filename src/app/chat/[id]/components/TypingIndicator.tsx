@@ -22,13 +22,13 @@ export function TypingIndicator({ typingUsers }: TypingIndicatorProps) {
     }
 
     return (
-        <div className="flex items-center gap-3 px-4 py-2">
-            <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-1 w-fit h-8 shadow-sm">
-                <span className="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                <span className="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                <span className="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full animate-bounce"></span>
+        <div className="flex items-center gap-2.5 px-4 py-1.5" aria-live="polite">
+            <div className="bg-bubble-other ring-1 ring-border/50 rounded-[1rem] rounded-tl-md px-3 flex items-center gap-1 w-fit h-7 shadow-[0_1px_2px_var(--shadow-tint)]">
+                <span className="size-1.5 bg-muted-foreground rounded-full animate-typing-dot"></span>
+                <span className="size-1.5 bg-muted-foreground rounded-full animate-typing-dot [animation-delay:160ms]"></span>
+                <span className="size-1.5 bg-muted-foreground rounded-full animate-typing-dot [animation-delay:320ms]"></span>
             </div>
-            <span className="text-xs text-muted-foreground font-medium animate-fade-in">
+            <span className="text-xs text-muted-foreground font-medium">
                 {text}
             </span>
         </div>

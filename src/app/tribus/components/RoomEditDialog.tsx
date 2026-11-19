@@ -126,12 +126,12 @@ export function RoomEditDialog({ room, open, onOpenChange, onUpdate, onUpdateCat
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="sm:max-w-[500px] bg-[#2f3136] text-white border-none shadow-2xl overflow-y-auto max-h-[90vh]"
+                className="sm:max-w-[500px] overflow-y-auto max-h-[90vh]"
                 onClick={(e) => e.stopPropagation()}
             >
                 <DialogHeader>
                     <DialogTitle>{t('rooms.edit.title')}</DialogTitle>
-                    <DialogDescription className="text-gray-400">
+                    <DialogDescription>
                         {t('rooms.edit.description')}
                     </DialogDescription>
                 </DialogHeader>
@@ -163,7 +163,6 @@ export function RoomEditDialog({ room, open, onOpenChange, onUpdate, onUpdateCat
                             id="name"
                             value={editForm.name}
                             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                            className="bg-[#36393f] border-none text-white focus-visible:ring-blue-500"
                         />
                     </div>
                     <div className="grid gap-2">
@@ -172,7 +171,6 @@ export function RoomEditDialog({ room, open, onOpenChange, onUpdate, onUpdateCat
                             id="short_description"
                             value={editForm.short_description}
                             onChange={(e) => setEditForm({ ...editForm, short_description: e.target.value })}
-                            className="bg-[#36393f] border-none text-white focus-visible:ring-blue-500"
                         />
                     </div>
                     <div className="grid gap-2">
@@ -181,7 +179,7 @@ export function RoomEditDialog({ room, open, onOpenChange, onUpdate, onUpdateCat
                             id="full_description"
                             value={editForm.full_description}
                             onChange={(e) => setEditForm({ ...editForm, full_description: e.target.value })}
-                            className="bg-[#36393f] border-none text-white focus-visible:ring-blue-500 min-h-[100px]"
+                            className="min-h-[100px]"
                         />
                     </div>
 
@@ -199,7 +197,7 @@ export function RoomEditDialog({ room, open, onOpenChange, onUpdate, onUpdateCat
                     <Button
                         onClick={handleSaveInfo}
                         disabled={isSaving}
-                        className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                        className="w-full"
                     >
                         {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {t('rooms.edit.save')}
@@ -217,7 +215,7 @@ function ImageUploadField({ label, currentImage, isUploading, inputRef, onFileCh
             <input type="file" ref={inputRef} onChange={onFileChange} className="hidden" accept="image/*" />
             <div
                 onClick={() => inputRef.current?.click()}
-                className={`${isBanner ? 'h-24 w-full rounded-lg' : 'h-24 w-24 rounded-full'} border-2 border-dashed border-gray-600 flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-500/10 transition-all overflow-hidden relative group`}
+                className={`${isBanner ? 'h-24 w-full rounded-lg' : 'h-24 w-24 rounded-2xl'} border-2 border-dashed border-border flex items-center justify-center cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-[border-color,background-color] duration-150 overflow-hidden relative group`}
             >
                 {isUploading ? (
                     <Loader2 className="h-6 w-6 animate-spin" />
@@ -225,11 +223,11 @@ function ImageUploadField({ label, currentImage, isUploading, inputRef, onFileCh
                     <>
                         <img src={currentImage} alt={label} className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Upload className="h-5 w-5" />
+                            <Upload className="h-5 w-5 text-white" />
                         </div>
                     </>
                 ) : (
-                    <Upload className="h-6 w-6 text-gray-400" />
+                    <Upload className="h-6 w-6 text-muted-foreground" />
                 )}
             </div>
         </div>

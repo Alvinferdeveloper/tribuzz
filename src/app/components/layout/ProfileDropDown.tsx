@@ -34,7 +34,14 @@ type CachedDisplayUser = { name: string; email: string; image?: string | null } 
 const DISPLAY_CACHE_KEY = 'user_nav_display_cache';
 const DISPLAY_CACHE_TTL_MS = 10 * 60 * 1000;
 
-export function UserNav() {
+type UserNavProps = {
+    /** Icon-only login button (for narrow containers like the tribe rail). */
+    compact?: boolean;
+    menuSide?: 'top' | 'right' | 'bottom' | 'left';
+    menuAlign?: 'start' | 'center' | 'end';
+};
+
+export function UserNav({ compact = false, menuSide = 'bottom', menuAlign = 'end' }: UserNavProps = {}) {
     const { session, isPending } = useAuth();
     const socket = useSocket();
     const navigation = useRouter()
@@ -73,9 +80,9 @@ export function UserNav() {
         if (!cachedUser) {
             return (
                 <a href="/login" title={t('layout.profile_dropdown.login_title')}>
-                    <Button size="sm" className="flex items-center justify-center gap-2 cursor-pointer h-9 w-9 p-0 md:w-auto md:px-4 shrink-0 active:scale-95 transition-transform duration-150 ease-out">
+                    <Button size="sm" className={compact ? "flex items-center justify-center cursor-pointer size-10 p-0 rounded-full shrink-0 active:scale-95 transition-transform duration-150 ease-out" : "flex items-center justify-center gap-2 cursor-pointer h-9 w-9 p-0 md:w-auto md:px-4 shrink-0 active:scale-95 transition-transform duration-150 ease-out"}>
                         <UserIcon className="w-4 h-4" />
-                        <span className="hidden md:inline">{t('layout.profile_dropdown.login_title')}</span>
+                        {!compact && <span className="hidden md:inline">{t('layout.profile_dropdown.login_title')}</span>}
                     </Button>
                 </a>
             );
@@ -92,9 +99,9 @@ export function UserNav() {
     if (!session?.user) {
         return (
             <a href="/login" title={t('layout.profile_dropdown.login_title')}>
-                <Button size="sm" className="flex items-center justify-center gap-2 cursor-pointer h-9 w-9 p-0 md:w-auto md:px-4 shrink-0 active:scale-95 transition-transform duration-150 ease-out">
+                <Button size="sm" className={compact ? "flex items-center justify-center cursor-pointer size-10 p-0 rounded-full shrink-0 active:scale-95 transition-transform duration-150 ease-out" : "flex items-center justify-center gap-2 cursor-pointer h-9 w-9 p-0 md:w-auto md:px-4 shrink-0 active:scale-95 transition-transform duration-150 ease-out"}>
                     <UserIcon className="w-4 h-4" />
-                    <span className="hidden md:inline">{t('layout.profile_dropdown.login_title')}</span>
+                    {!compact && <span className="hidden md:inline">{t('layout.profile_dropdown.login_title')}</span>}
                 </Button>
             </a>
         );
@@ -117,7 +124,7 @@ export function UserNav() {
                     </Avatar>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 backdrop-blur-xl bg-background/95" align="end" forceMount>
+            <DropdownMenuContent className="w-56 backdrop-blur-xl bg-background/95" side={menuSide} align={menuAlign} sideOffset={8} forceMount>
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">{user.name}</p>

@@ -21,26 +21,29 @@ function CampfireBackgroundComponent() {
 
     return (
         <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-stone-950" />
+            {/* Navy night sky, the app's base color. Only a faint orange glow near
+                the ground hints at the fire's light. */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_bottom,oklch(0.16_0.05_266)_0%,oklch(0.15_0.045_265)_50%,oklch(0.13_0.035_262)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(55%_60%_at_50%_100%,oklch(0.65_0.16_50/0.10),transparent_70%)]" />
 
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                 <defs>
                     <radialGradient id="skyGlow" cx="50%" cy="20%" r="60%">
-                        <stop offset="0%" stopColor="#1e3a5f" stopOpacity="0.5" />
+                        <stop offset="0%" stopColor="oklch(0.35 0.08 280)" stopOpacity="0.35" />
                         <stop offset="50%" stopColor="#0f172a" stopOpacity="0.2" />
                         <stop offset="100%" stopColor="#020617" stopOpacity="0" />
                     </radialGradient>
                     <linearGradient id="mountainGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#0f172a" stopOpacity="1" />
-                        <stop offset="100%" stopColor="#1e293b" stopOpacity="1" />
+                        <stop offset="0%" stopColor="oklch(0.19 0.045 265)" stopOpacity="1" />
+                        <stop offset="100%" stopColor="oklch(0.23 0.045 264)" stopOpacity="1" />
                     </linearGradient>
                     <linearGradient id="mountainGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#1e293b" stopOpacity="1" />
-                        <stop offset="100%" stopColor="#334155" stopOpacity="1" />
+                        <stop offset="0%" stopColor="oklch(0.23 0.045 264)" stopOpacity="1" />
+                        <stop offset="100%" stopColor="oklch(0.28 0.045 262)" stopOpacity="1" />
                     </linearGradient>
                     <linearGradient id="cliffGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#0a0a0a" stopOpacity="1" />
-                        <stop offset="100%" stopColor="#18181b" stopOpacity="1" />
+                        <stop offset="0%" stopColor="oklch(0.11 0.03 265)" stopOpacity="1" />
+                        <stop offset="100%" stopColor="oklch(0.14 0.035 265)" stopOpacity="1" />
                     </linearGradient>
                     <filter id="starGlow">
                         <feGaussianBlur stdDeviation="0.1" result="coloredBlur" />

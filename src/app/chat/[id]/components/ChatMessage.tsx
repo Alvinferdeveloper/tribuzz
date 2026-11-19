@@ -14,6 +14,7 @@ import { cn } from "@/src/lib/utils";
 import { AudioPlayer } from "@/src/app/chat/[id]/components/AudioPlayer";
 import { useAuth } from "@/src/app/hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import { tribeTone } from "@/src/app/utils/tribeColor";
 
 interface User {
     id: string;
@@ -160,9 +161,12 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
                         key={index}
                         href={`/profile/${encodeURIComponent(part)}`}
                         className={cn(
-                            "font-semibold rounded px-1",
-                            userExists ? "bg-blue-300/50 dark:bg-blue-700/50 text-blue-800 dark:text-blue-200" : "text-muted-foreground",
-                            isMe && "ring-1 ring-blue-500"
+                            "font-semibold rounded-md px-1 transition-colors",
+                            isMe
+                                ? "bg-tribe-sun/45 text-foreground"
+                                : userExists
+                                    ? (isMyMessage ? "bg-white/20 text-primary-foreground" : "bg-primary/10 text-primary hover:bg-primary/15")
+                                    : (isMyMessage ? "text-primary-foreground/80" : "text-muted-foreground")
                         )}
                     >
                         @{part}
@@ -216,7 +220,7 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
 
         return (
             <div className="w-full flex justify-center my-2 animate-in fade-in duration-300">
-                <div className="px-3 py-1 rounded-full bg-muted/50 border text-[11px] text-muted-foreground font-medium">
+                <div className="px-3 py-1 rounded-full bg-chat-chrome backdrop-blur-md ring-1 ring-border/60 text-[11px] text-muted-foreground font-medium">
                     {isTextMessage(msg) ? msg.message : t('chat.message.system_message')}
                 </div>
             </div>
@@ -229,20 +233,25 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
         <div
             ref={messageRef}
             className={cn(
-                "max-w-xs rounded-2xl text-sm md:max-w-md relative self-start",
+                "max-w-[min(20rem,78vw)] rounded-[1.25rem] text-[0.9375rem] leading-snug md:max-w-md relative self-start",
                 hasReactions && "mb-4",
+                // Speech-bubble shape echoing the logo: the corner pointing at
+                // the author tightens on the first bubble of a burst.
                 isMyMessage
-                    ? cn("bg-primary text-primary-foreground", isGroupStart && "rounded-tr-none")
-                    : cn("bg-muted", isGroupStart && "rounded-tl-none"),
-                isImageMessage(msg) || isGifMessage(msg) ? "p-0.5" : "p-3 shadow-sm"
+                    ? cn("bg-primary text-primary-foreground shadow-[0_1px_2px_var(--shadow-tint)]", isGroupStart && "rounded-tr-md")
+                    : cn("bg-bubble-other text-bubble-other-foreground ring-1 ring-border/50 shadow-[0_1px_2px_var(--shadow-tint)]", isGroupStart && "rounded-tl-md"),
+                isImageMessage(msg) || isGifMessage(msg) ? "p-1" : "px-3.5 py-2"
             )}
             {...(!hasHover && longPressHandlers)}
             {...(!hasHover && { onContextMenu: (e) => handleLongPress(e) })}
         >
             {msg.replyTo && (
-                <div className="flex items-center gap-2 p-2 text-xs text-muted-foreground bg-muted-foreground/20 rounded-t-lg">
+                <div className={cn(
+                    "flex items-center gap-1.5 mb-1.5 -mx-1 px-2.5 py-1.5 text-xs rounded-xl",
+                    isMyMessage ? "bg-black/12 text-primary-foreground/85" : "bg-muted text-muted-foreground"
+                )}>
                     <Reply className="h-3 w-3" />
-                    <span>{t('chat.message.replying_to', { username: msg.replyTo.author })}</span>
+                    <span className="font-semibold">{t('chat.message.replying_to', { username: msg.replyTo.author })}</span>
                     <ChevronRight className="h-3 w-3" />
                     <span className="italic truncate max-w-[150px]">{msg.replyTo.messageSnippet}</span>
                 </div>
@@ -251,7 +260,7 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
 
             {/* Image Rendering */}
             {isImageMessage(msg) && imageUrl && (
-                <div className="cursor-pointer overflow-hidden rounded-xl relative" onClick={handleClick}>
+                <div className="cursor-pointer overflow-hidden rounded-[1rem] relative" onClick={handleClick}>
                     <img
                         src={imageUrl}
                         alt={t('chat.message.image_alt')}
@@ -269,7 +278,7 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
 
             {/* GIF Rendering */}
             {isGifMessage(msg) && gifUrl && (
-                <div className="group/gif cursor-pointer overflow-hidden rounded-xl relative" onClick={handleClick}>
+                <div className="group/gif cursor-pointer overflow-hidden rounded-[1rem] relative" onClick={handleClick}>
                     <img
                         src={gifUrl}
                         alt={t('chat.message.gif_alt')}
@@ -288,7 +297,7 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
                         >
                             <Heart className={cn(
                                 "h-4 w-4 transition-colors",
-                                isGifFavorite(msg.giphyId) ? "fill-red-500 text-red-500" : "text-white"
+                                isGifFavorite(msg.giphyId) ? "fill-tribe-coral text-tribe-coral" : "text-white"
                             )} />
                         </button>
                     )}
@@ -348,30 +357,30 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
                                     src={msg.userProfileImage || `https://api.dicebear.com/9.x/avataaars/svg?seed=${msg.username}`}
                                     alt={`${msg.username}'s profile picture`}
                                 />
-                                <AvatarFallback>{getInitials(msg.username)}</AvatarFallback>
+                                <AvatarFallback className={cn("text-[10px]", tribeTone(msg.username).soft)}>{getInitials(msg.username)}</AvatarFallback>
                             </Avatar>
                         ) : (
                             <Link href={`/profile/${encodeURIComponent(msg.username)}`}>
-                                <Avatar className="h-6 w-6 hover:ring-2 hover:ring-primary transition-all">
+                                <Avatar className="h-6 w-6 ring-2 ring-transparent hover:ring-primary/60 transition-[box-shadow] duration-150">
                                     <AvatarImage
                                         src={msg.userProfileImage || `https://api.dicebear.com/9.x/avataaars/svg?seed=${msg.username}`}
                                         alt={`${msg.username}'s profile picture`}
                                     />
-                                    <AvatarFallback>{getInitials(msg.username)}</AvatarFallback>
+                                    <AvatarFallback className={cn("text-[10px]", tribeTone(msg.username).soft)}>{getInitials(msg.username)}</AvatarFallback>
                                 </Avatar>
                             </Link>
                         )}
                         {isMyMessage ? (
-                            <span className="text-sm font-semibold text-primary">{t('chat.message.you')}</span>
+                            <span className="text-[13px] font-semibold text-primary">{t('chat.message.you')}</span>
                         ) : (
                             <Link
                                 href={`/profile/${encodeURIComponent(msg.username)}`}
-                                className="text-sm font-semibold text-primary hover:underline"
+                                className={cn("text-[13px] font-semibold hover:underline underline-offset-2", tribeTone(msg.username).ink)}
                             >
                                 {msg.username}
                             </Link>
                         )}
-                        <span className="text-xs text-muted-foreground">{formatTime(msg.timestamp)}</span>
+                        <span className="text-[11px] text-muted-foreground tabular-nums">{formatTime(msg.timestamp)}</span>
                         {msg.edited && <span className="text-[10px] text-muted-foreground/60 italic ml-1">{t('chat.message.edited')}</span>}
                     </div>
                 )}
@@ -394,15 +403,15 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
                     )}
                     {hasHover && (
                         <div className={cn(
-                            "absolute -top-4 z-20 flex items-center gap-0.5 rounded-full border bg-background/95 backdrop-blur-sm shadow-md p-0.5 transition-opacity duration-150 ease-out",
+                            "absolute -top-4 z-20 flex items-center gap-0.5 rounded-full bg-popover ring-1 ring-border/70 shadow-[var(--menu-shadow)] p-0.5 transition-[opacity,transform] duration-150 ease-out",
                             isMyMessage ? "right-2" : "left-2",
-                            showActionToolbar ? "opacity-100" : "opacity-0 pointer-events-none"
+                            showActionToolbar ? "opacity-100 translate-y-0" : "opacity-0 translate-y-0.5 pointer-events-none"
                         )}>
                             {QUICK_REACTIONS.map((emoji) => (
                                 <button
                                     key={emoji}
                                     onClick={() => handleReact(emoji)}
-                                    className="h-7 w-7 rounded-full flex items-center justify-center text-sm hover:bg-accent transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                                    className="h-7 w-7 rounded-full flex items-center justify-center text-sm hover:bg-accent transition-[background-color,transform] duration-150 ease-out hover:scale-110 active:scale-95 cursor-pointer"
                                     aria-label={t('chat.message.react_with', { emoji })}
                                 >
                                     {emoji}
@@ -439,7 +448,7 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
                     />
                     <div
                         className={cn(
-                            "fixed z-50 bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl p-1 flex flex-col items-stretch gap-0.5 min-w-[140px]",
+                            "fixed z-50 bg-popover ring-1 ring-border/70 rounded-2xl shadow-[var(--menu-shadow)] p-1 flex flex-col items-stretch gap-0.5 min-w-[160px] origin-top",
                             "animate-in fade-in zoom-in-95 duration-200",
                             isMyMessage ? "right-6" : "left-6"
                         )}
@@ -463,7 +472,7 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
                                     </Button>
                                 )}
                                 {isMyMessage && onDelete && (
-                                    <Button variant="ghost" size="sm" onClick={() => onDelete(msg.id)} className="flex items-center gap-3 rounded-lg justify-start px-3 cursor-pointer">
+                                    <Button variant="ghost" size="sm" onClick={() => onDelete(msg.id)} className="flex items-center gap-3 rounded-lg justify-start px-3 cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/10">
                                         <Trash2 className="h-4 w-4" /> {t('chat.message.delete')}
                                     </Button>
                                 )}

@@ -7,26 +7,12 @@ import useRoom from '@/src/app/tribus/hooks/useRoom';
 import { AuthGuard } from "@/src/app/components/auth/AuthGuard";
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useInfiniteScroll } from '@/src/app/hooks/useInfiniteScroll';
-import { Variants } from 'framer-motion';
 import { RoomCard } from '@/src/app/tribus/components/RoomCard';
 import { useRoomUserCounts } from '@/src/app/tribus/hooks/useRoomUserCounts';
 import { SearchBar } from '@/src/app/tribus/components/SearchBar';
 import { useDebounce } from '@/src/app/hooks/useDebounce';
 import { Button } from '@/src/components/ui/button';
 import Link from 'next/link';
-
-const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-        opacity: 1,
-        y: 0,
-        transition: {
-            delay: i * 0.05,
-            duration: 0.3,
-            ease: "easeOut"
-        }
-    })
-};
 
 export default function FavoritesPage() {
     const { t } = useTranslation();
@@ -47,7 +33,7 @@ export default function FavoritesPage() {
 
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-main-gradient">
+            <div className="min-h-screen bg-background">
                 <div className="max-w-7xl mx-auto p-6 space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1">
@@ -55,7 +41,7 @@ export default function FavoritesPage() {
                                 <ArrowLeft className="h-4 w-4" />
                                 {t('rooms.favorites.back')}
                             </Link>
-                            <h1 className="text-3xl font-bold tracking-tight text-white">{t('rooms.favorites.title')}</h1>
+                            <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('rooms.favorites.title')}</h1>
                             <p className="text-muted-foreground">{t('rooms.favorites.subtitle')}</p>
                         </div>
 
@@ -69,7 +55,7 @@ export default function FavoritesPage() {
                     <main className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                         {rooms.length === 0 && !loading && !error && (
                             <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
-                                <p className="text-gray-400 text-lg mb-4">{t('rooms.favorites.empty')}</p>
+                                <p className="text-muted-foreground text-lg mb-4">{t('rooms.favorites.empty')}</p>
                                 <Button onClick={() => router.push('/tribus')}>
                                     {t('rooms.favorites.browse')}
                                 </Button>
@@ -83,7 +69,6 @@ export default function FavoritesPage() {
                                 userCount={userCounts[room.id] || 0}
                                 isConnecting={connecting === room.id}
                                 onJoin={handleJoinRoom}
-                                cardVariants={cardVariants}
                             />
                         ))}
                     </main>

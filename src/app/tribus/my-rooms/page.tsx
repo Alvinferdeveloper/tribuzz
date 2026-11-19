@@ -14,19 +14,6 @@ import RoomCardFooter from '@/src/app/tribus/my-rooms/components/RoomCardFooter'
 import { RoomStatus } from '@/src/app/tribus/hooks/useRoom';
 import { cn } from '@/src/lib/utils';
 
-const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-        opacity: 1,
-        y: 0,
-        transition: {
-            delay: i * 0.05,
-            duration: 0.3,
-            ease: "easeOut"
-        }
-    })
-};
-
 type StatusTab = RoomStatus | 'ALL';
 const STATUS_TABS: StatusTab[] = ['ALL', 'IN_REVISION', 'ACCEPTED', 'REJECTED'];
 
@@ -67,7 +54,7 @@ export default function MyRoomsPage() {
 
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-main-gradient p-6">
+            <div className="min-h-screen bg-background p-6">
                 <div className="max-w-7xl mx-auto space-y-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1">
@@ -75,7 +62,7 @@ export default function MyRoomsPage() {
                                 <ArrowLeft className="h-4 w-4" />
                                 {t('rooms.my-rooms.back')}
                             </Link>
-                            <h1 className="text-3xl font-bold tracking-tight text-white">{t('rooms.my-rooms.title')}</h1>
+                            <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('rooms.my-rooms.title')}</h1>
                             <p className="text-muted-foreground">{t('rooms.my-rooms.subtitle')}</p>
                         </div>
                         <Link href="/tribus/create">
@@ -114,7 +101,7 @@ export default function MyRoomsPage() {
                                 <Loader2 className="h-8 w-8 text-muted-foreground" />
                             </div>
                             <div className="space-y-2">
-                                <h2 className="text-xl font-semibold text-white">
+                                <h2 className="text-xl font-semibold text-foreground">
                                     {t(`rooms.my-rooms.${emptyKey}_title`)}
                                 </h2>
                                 <p className="text-muted-foreground max-w-sm">
@@ -140,7 +127,6 @@ export default function MyRoomsPage() {
                                         userCount={userCounts[room.id] || 0}
                                         isConnecting={connecting === room.id}
                                         onJoin={handleJoinRoom}
-                                        cardVariants={cardVariants}
                                         onDelete={deleteRoom}
                                         onUpdate={updateRoom}
                                         onUpdateCategories={updateCategories}

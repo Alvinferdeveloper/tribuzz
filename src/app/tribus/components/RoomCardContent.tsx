@@ -1,9 +1,9 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
-import { CardContent } from '@/src/components/ui/card';
 import { ConnectingAnimation } from '@/src/app/components/animations/ConnectionAnimation';
-import { Circle, Check } from 'lucide-react';
+import { BadgeCheck, ArrowRight } from 'lucide-react';
+import { cn } from '@/src/lib/utils';
 
 interface RoomCardContentProps {
     name: string;
@@ -11,53 +11,68 @@ interface RoomCardContentProps {
     verified: boolean;
     userCount: number;
     isConnecting: boolean;
+    categories?: { id: string; name: string; icon: string | null }[];
     footer?: React.ReactNode;
 }
 
-export function RoomCardContent({ name, description, verified, userCount, isConnecting, footer }: RoomCardContentProps) {
+export function RoomCardContent({ name, description, verified, userCount, isConnecting, categories, footer }: RoomCardContentProps) {
     const { t } = useTranslation();
+    const isLive = userCount > 0;
+    const firstCategory = categories?.[0];
+
     return (
-        <CardContent className="pt-3 pb-3 px-3 flex flex-col flex-1">
-            {/* Room Name */}
-            <div className="flex items-center gap-2 mb-2">
-                {verified && (
-                    <div className="w-4 h-4 min-w-[16px] bg-green-500 rounded-full flex items-center justify-center shrink-0">
-                        <Check className="w-3 h-3 text-white" />
-                    </div>
-                )}
-                <h3 className="text-white font-bold text-base truncate pr-2">
+        <div className="flex flex-1 flex-col px-4 pt-8 pb-4">
+            <div className="flex items-center gap-1.5">
+                <h3 className="truncate text-[15px] font-semibold leading-tight tracking-tight">
                     {name}
                 </h3>
+                {verified && (
+                    <BadgeCheck className="size-4 shrink-0 text-tribe-teal-ink" aria-label={t('rooms.card.verified')} />
+                )}
             </div>
 
-            {/* Description */}
-            <div className="flex-1 mb-4">
+            <div className="mt-1.5 mb-4 flex-1">
                 {isConnecting ? (
-                    <div className="w-full py-2 animate-pulse">
+                    <div className="py-2">
                         <ConnectingAnimation text={t('rooms.card.connecting')} />
                     </div>
                 ) : (
-                    <p className="text-white text-xs leading-relaxed line-clamp-2 text-ellipsis overflow-hidden">
+                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                         {description}
                     </p>
                 )}
             </div>
 
-            {/* Member Stats */}
-            <div className="mt-auto flex items-center gap-4 text-xs pt-2 border-t border-gray-700/50">
-                <div className="flex items-center gap-1.5">
-                    <Circle className="w-2 h-2 fill-green-500 text-green-500 animate-pulse" />
-                    <span className="text-[#b9bbbe] font-medium">
-                        {t('rooms.card.active_users', { count: userCount || 0 })}
+            <div className="mt-auto flex items-center gap-2 text-xs">
+                <span className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-2 py-1 font-semibold tabular-nums",
+                    isLive ? "bg-presence/12 text-foreground" : "bg-muted text-muted-foreground"
+                )}>
+                    <span className="relative flex size-1.5">
+                        {isLive && <span className="absolute inline-flex size-full rounded-full bg-presence/70 animate-ping [animation-duration:2.4s] motion-reduce:hidden" />}
+                        <span className={cn("relative inline-flex size-1.5 rounded-full", isLive ? "bg-presence" : "bg-muted-foreground/50")} />
                     </span>
-                </div>
+                    {t('rooms.card.active_users', { count: userCount || 0 })}
+                </span>
+
+                {firstCategory && (
+                    <span className="truncate text-muted-foreground">
+                        {firstCategory.icon && <span aria-hidden="true" className="mr-1">{firstCategory.icon}</span>}
+                        {firstCategory.name}
+                    </span>
+                )}
+
+                <ArrowRight
+                    aria-hidden="true"
+                    className="ml-auto size-4 shrink-0 text-primary opacity-0 -translate-x-1 transition-[opacity,transform] duration-200 ease-out group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0"
+                />
             </div>
 
             {footer && (
-                <div className="mt-3 pt-3 border-t border-gray-700/50" onClick={(e) => e.stopPropagation()}>
+                <div className="mt-3 border-t border-border pt-3" onClick={(e) => e.stopPropagation()}>
                     {footer}
                 </div>
             )}
-        </CardContent>
+        </div>
     );
 }

@@ -15,10 +15,10 @@ export function ChatConnecting({ roomName }: ChatConnectingProps) {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background">
             <div className="w-full max-w-md p-8 space-y-6 text-center">
-                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10">
+                <div className="flex items-center justify-center size-16 mx-auto mb-4 rounded-2xl bg-primary/12">
                     <Flame className="w-7 h-7 text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold">
+                <h1 className="text-2xl font-semibold tracking-tight text-balance">
                     {roomName
                         ? t('chat.connecting.connecting_to', { topic: roomName })
                         : t('chat.connecting.connecting_generic')}
@@ -27,7 +27,7 @@ export function ChatConnecting({ roomName }: ChatConnectingProps) {
                 <p className="text-sm text-muted-foreground">
                     {t('chat.connecting.connecting_users')}
                 </p>
-                <Button variant="outline" onClick={() => router.push("/")} className="mt-4 cursor-pointer">
+                <Button variant="outline" onClick={() => router.push("/tribus")} className="mt-4">
                     {t('chat.connecting.cancel')}
                 </Button>
             </div>

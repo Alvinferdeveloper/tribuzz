@@ -7,11 +7,11 @@ export function DateSeparator({ dateStr }: { dateStr: string }) {
 
     return (
         <div className="w-full flex items-center gap-3 my-5 px-2 select-none">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70 whitespace-nowrap">
+            <div className="flex-1 h-px bg-border/70" />
+            <span className="rounded-full bg-chat-chrome backdrop-blur-md ring-1 ring-border/50 px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground whitespace-nowrap">
                 {formatDateSeparator(dateStr, t, i18n.language)}
             </span>
-            <div className="flex-1 h-px bg-border" />
+            <div className="flex-1 h-px bg-border/70" />
         </div>
     );
 }

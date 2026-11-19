@@ -1,7 +1,8 @@
-
 import { useState } from 'react';
+import type { Room } from '@/src/app/tribus/hooks/useRoom';
+import { emitFavoriteChange } from '@/src/app/tribus/utils/favoriteEvents';
 
-export function useFavoriteRoom(roomId: string, initialIsFavorite: boolean = false) {
+export function useFavoriteRoom(roomId: string, initialIsFavorite: boolean = false, room?: Room) {
     const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -11,9 +12,12 @@ export function useFavoriteRoom(roomId: string, initialIsFavorite: boolean = fal
 
         if (isLoading) return;
 
-        // Optimistic update
+        // Optimistic update, broadcast so other favorite lists (the rail)
+        // reflect it immediately too.
         const previousState = isFavorite;
-        setIsFavorite(!isFavorite);
+        const nextState = !isFavorite;
+        setIsFavorite(nextState);
+        emitFavoriteChange({ roomId, isFavorite: nextState, room });
         setIsLoading(true);
 
         try {
@@ -29,9 +33,10 @@ export function useFavoriteRoom(roomId: string, initialIsFavorite: boolean = fal
                 throw new Error('Failed to toggle favorite');
             }
         } catch (error) {
-            // Revert on error
+            // Revert on error, everywhere it was shown.
             console.error('Error toggling favorite:', error);
             setIsFavorite(previousState);
+            emitFavoriteChange({ roomId, isFavorite: previousState, room });
         } finally {
             setIsLoading(false);
         }
