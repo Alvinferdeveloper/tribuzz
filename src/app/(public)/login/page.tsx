@@ -62,6 +62,11 @@ export default function LoginPage() {
             id="password"
             autoComplete="current-password"
             label={t('auth.login.password_label')}
+            labelAside={
+              <Link href="/forgot-password" className="text-sm font-medium text-primary underline-offset-4 hover:underline">
+                {t('auth.login.forgot_password')}
+              </Link>
+            }
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}

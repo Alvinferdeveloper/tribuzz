@@ -18,6 +18,9 @@ import Facebook from '@/src/app/components/svg/logos/Facebook';
 
 const AFTER_AUTH_PATH = '/tribus';
 
+/** better-auth's default minimum; keep hints and inputs in sync with it. */
+export const MIN_PASSWORD_LENGTH = 8;
+
 export function AuthHeading({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div>
@@ -151,6 +154,7 @@ export function useAuthErrorMessage() {
   return (error: { code?: string; status?: number; message?: string } | null | undefined, fallbackKey: string) => {
     if (!error) return null;
     if (error.status === 403) return t('auth.errors.EMAIL_NOT_VERIFIED');
+    if (error.status === 429) return t('auth.errors.TOO_MANY_REQUESTS');
     return t(`auth.errors.${error.code ?? 'UNKNOWN'}`, { defaultValue: t(fallbackKey) });
   };
 }

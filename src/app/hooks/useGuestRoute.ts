@@ -4,7 +4,7 @@ import { useSession } from "@/src/app/hooks/useSession";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 
-const GUEST_ROUTES = ["/", "/login", "/signup", "/verify-email"];
+const GUEST_ROUTES = ["/", "/login", "/signup", "/verify-email", "/forgot-password"];
 
 export function useGuestRoute() {
   const { session, isPending } = useSession();

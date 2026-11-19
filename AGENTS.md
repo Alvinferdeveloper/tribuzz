@@ -98,6 +98,8 @@ random_chat/
 | `/login` | Inicio de sesión (email/password + OAuth) | Pública |
 | `/signup` | Registro de cuenta | Pública |
 | `/verify-email` | Verificación de email | Pública |
+| `/forgot-password` | Pedir enlace para restablecer contraseña | Pública |
+| `/reset-password` | Elegir nueva contraseña (llega desde el email) | Pública |
 | `/welcome` | Pantalla post-registro | Autenticada |
 | `/rooms` | Explorador de salas con búsqueda en tiempo real | Pública |
 | `/rooms/create` | Crear nueva sala | Autenticada |
