@@ -17,10 +17,14 @@ export const useLongPress = (
     const target = useRef<EventTarget | null>(null);
     const startPos = useRef<{ x: number; y: number } | null>(null);
     const isLongPressTriggered = useRef(false);
+    // Set when the finger moved too far (scroll, swipe): lifting it then
+    // must not count as a tap (it used to open images after a scroll).
+    const isCancelled = useRef(false);
 
     const start = useCallback(
         (event: MouseEvent | TouchEvent) => {
             isLongPressTriggered.current = false;
+            isCancelled.current = false;
 
             // Record the initial touch/mouse position
             if ('touches' in event && event.touches.length > 0) {
@@ -61,6 +65,7 @@ export const useLongPress = (
 
             // If the finger moved beyond the threshold, cancel the long press (user is scrolling)
             if (dx > moveThreshold || dy > moveThreshold) {
+                isCancelled.current = true;
                 clearTimeout(timeout.current);
                 timeout.current = null;
                 startPos.current = null;
@@ -79,7 +84,7 @@ export const useLongPress = (
                 timeout.current = null;
             }
             // Only trigger onClick if long press was NOT triggered
-            if (shouldTriggerClick && onClick && !isLongPressTriggered.current) {
+            if (shouldTriggerClick && onClick && !isLongPressTriggered.current && !isCancelled.current) {
                 onClick(event);
             }
             if (shouldPreventDefault && target.current) {

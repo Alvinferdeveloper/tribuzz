@@ -3,9 +3,13 @@ import { Message, isTextMessage, isImageMessage, isAudioMessage, isGifMessage, R
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
 import { Button } from "@/src/components/ui/button";
 import Link from "next/link";
-import { Reply, ChevronRight, SmilePlus, Heart, Megaphone, ShieldCheck, Pencil, Trash2 } from "lucide-react";
+import { Reply, ChevronRight, SmilePlus, Heart, Megaphone, ShieldCheck, Pencil, Trash2, Copy } from "lucide-react";
 import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useLongPress } from "@/src/app/chat/[id]/hooks/useLongPress";
+import { useSwipeToReply } from "@/src/app/chat/[id]/hooks/useSwipeToReply";
+import { MessageActionMenu, type MessageAction } from "@/src/app/chat/[id]/components/MessageActionMenu";
+import { scrollToMessage } from "@/src/app/chat/[id]/utils/scrollToMessage";
+import { toast } from "sonner";
 import { useHover } from "@/src/app/hooks/useHover";
 import { useClickOutside } from "@/src/app/hooks/useClickOutside";
 import { ReactionPicker, commonReactions } from "@/src/app/chat/[id]/components/ReactionPicker";
@@ -56,7 +60,7 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
     const isMyMessage = msg.username === username;
     const [menuVisible, setMenuVisible] = useState(false);
     const [pickerVisible, setPickerVisible] = useState(false);
-    const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+    const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null);
     // Tracked separately from CSS group-hover: the reactions row is a DOM
     // descendant of the bubble (just visually offset via negative bottom),
     // so hovering a reaction pill would also count as "hovering the message"
@@ -78,7 +82,8 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
         event.preventDefault();
         const rect = messageRef.current?.getBoundingClientRect();
         if (rect) {
-            setMenuPosition({ x: rect.x + rect.width / 2, y: rect.y });
+            navigator.vibrate?.(8);
+            setMenuAnchor(rect);
             setMenuVisible(true);
         }
     };
@@ -110,15 +115,22 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
         // directly rather than a substring that never matched it.
         const scrollParent = messageRef.current?.closest('.scrollbar-thin-light') as HTMLElement | null;
         const handler = () => dismissMenu();
+        // The long press opens the menu with the finger still down; ignore
+        // its jitter and only treat drags made after lifting it as "dismiss".
+        let fingerLifted = false;
+        const onTouchEnd = () => { fingerLifted = true; };
+        const onTouchMove = () => { if (fingerLifted) dismissMenu(); };
 
         window.addEventListener('scroll', handler, true); // capture phase to catch all scrolls
         scrollParent?.addEventListener('scroll', handler);
-        window.addEventListener('touchmove', handler, { passive: true });
+        window.addEventListener('touchend', onTouchEnd, { passive: true });
+        window.addEventListener('touchmove', onTouchMove, { passive: true });
 
         return () => {
             window.removeEventListener('scroll', handler, true);
             scrollParent?.removeEventListener('scroll', handler);
-            window.removeEventListener('touchmove', handler);
+            window.removeEventListener('touchend', onTouchEnd);
+            window.removeEventListener('touchmove', onTouchMove);
         };
     }, [menuVisible, dismissMenu]);
 
@@ -140,6 +152,31 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
         setPickerVisible(false);
         setMenuVisible(false);
     }
+
+    const swipe = useSwipeToReply(handleReply, !hasHover);
+
+    const handleCopy = async () => {
+        setMenuVisible(false);
+        if (!isTextMessage(msg)) return;
+        try {
+            await navigator.clipboard.writeText(msg.message);
+            toast.success(t('chat.message.copied'));
+        } catch {
+            toast.error(t('chat.message.copy_failed'));
+        }
+    };
+
+    // Touch: long press opens the menu, a right swipe replies. Both listen to
+    // the same touches; a swipe moves past the long-press threshold, so it
+    // cancels the menu on its own.
+    const touchHandlers = hasHover ? {} : {
+        ...longPressHandlers,
+        onTouchStart: (e: React.TouchEvent) => { longPressHandlers.onTouchStart(e); swipe.handlers.onTouchStart(e); },
+        onTouchMove: (e: React.TouchEvent) => { longPressHandlers.onTouchMove(e); swipe.handlers.onTouchMove(e); },
+        onTouchEnd: (e: React.TouchEvent) => { longPressHandlers.onTouchEnd(e); swipe.handlers.onTouchEnd(); },
+        onTouchCancel: swipe.handlers.onTouchCancel,
+        onContextMenu: (e: React.MouseEvent) => handleLongPress(e),
+    };
 
     const isGifFavorite = (giphyId: string) => favoriteGifs.some(g => g.giphyId === giphyId);
 
@@ -245,8 +282,14 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
     const messageContent = (
         <div
             ref={messageRef}
+            data-message-id={msg.id}
+            style={swipe.offset ? { transform: `translateX(${swipe.offset}px)` } : undefined}
             className={cn(
                 "max-w-[min(20rem,78vw)] rounded-[1.25rem] text-[0.9375rem] leading-snug md:max-w-md relative self-start",
+                !hasHover && "touch-pan-y select-none [-webkit-touch-callout:none]",
+                // Snap back smoothly after a swipe; follow the finger 1:1 while dragging.
+                !swipe.dragging && "transition-[transform,box-shadow] duration-200 ease-out",
+                menuVisible && !hasHover && "scale-[1.03] ring-2 ring-primary/50",
                 hasReactions && "mb-4",
                 // Speech-bubble shape echoing the logo: the corner pointing at
                 // the author tightens on the first bubble of a burst.
@@ -255,19 +298,26 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
                     : cn("bg-bubble-other text-bubble-other-foreground ring-1 ring-border/50 shadow-[0_1px_2px_var(--shadow-tint)]", isGroupStart && "rounded-tl-md"),
                 isImageMessage(msg) || isGifMessage(msg) ? "p-1" : "px-3.5 py-2"
             )}
-            {...(!hasHover && longPressHandlers)}
-            {...(!hasHover && { onContextMenu: (e) => handleLongPress(e) })}
+            {...touchHandlers}
         >
             {msg.replyTo && (
-                <div className={cn(
-                    "flex items-center gap-1.5 mb-1.5 -mx-1 px-2.5 py-1.5 text-xs rounded-xl",
-                    isMyMessage ? "bg-black/12 text-primary-foreground/85" : "bg-muted text-muted-foreground"
-                )}>
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (!scrollToMessage(e.currentTarget, msg.replyTo!.id)) toast(t('chat.message.reply_unavailable'));
+                    }}
+                    aria-label={t('chat.message.jump_to_reply', { username: msg.replyTo.author })}
+                    className={cn(
+                        "flex w-[calc(100%+0.5rem)] cursor-pointer items-center gap-1.5 mb-1.5 -mx-1 px-2.5 py-1.5 text-left text-xs rounded-xl transition-opacity active:opacity-70",
+                        isMyMessage ? "bg-black/12 text-primary-foreground/85" : "bg-muted text-muted-foreground"
+                    )}
+                >
                     <Reply className="h-3 w-3" />
                     <span className="font-semibold">{t('chat.message.replying_to', { username: msg.replyTo.author })}</span>
                     <ChevronRight className="h-3 w-3" />
                     <span className="italic truncate max-w-[150px]">{msg.replyTo.messageSnippet}</span>
-                </div>
+                </button>
             )}
             {isTextMessage(msg) && <p className="leading-relaxed">{highlightMentions(msg.message)}</p>}
 
@@ -403,6 +453,15 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
                     onMouseEnter={() => setIsBubbleHovered(true)}
                     onMouseLeave={() => setIsBubbleHovered(false)}
                 >
+                    {swipe.offset > 0 && (
+                        <span
+                            aria-hidden="true"
+                            className="absolute left-1 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-primary/15 text-primary"
+                            style={{ opacity: swipe.progress, transform: `translateY(-50%) scale(${0.6 + swipe.progress * 0.4})` }}
+                        >
+                            <Reply className="size-4" />
+                        </span>
+                    )}
                     {!isGroupStart && (
                         <time
                             className={cn(
@@ -452,47 +511,23 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
                 </div>
             </div>
 
-            {menuVisible && !hasHover && (
-                <>
-                    <div
-                        className="fixed inset-0 z-40"
-                        onClick={dismissMenu}
-                        onTouchMove={dismissMenu}
-                    />
-                    <div
-                        className={cn(
-                            "fixed z-50 bg-popover ring-1 ring-border/70 rounded-2xl shadow-[var(--menu-shadow)] p-1 flex flex-col items-stretch gap-0.5 min-w-[160px] origin-top",
-                            "animate-in fade-in zoom-in-95 duration-200",
-                            isMyMessage ? "right-6" : "left-6"
-                        )}
-                        style={{ top: menuPosition.y - 45 }}
-                    >
-                        {pickerVisible ? (
-                            <div className="animate-in fade-in slide-in-from-left-2 duration-150">
-                                <ReactionPicker onSelect={handleReact} />
-                            </div>
-                        ) : (
-                            <div className="flex flex-col w-full">
-                                <Button variant="ghost" size="sm" onClick={() => { setPickerVisible(true); }} className="flex items-center gap-3 rounded-lg justify-start px-3 cursor-pointer">
-                                    <SmilePlus className="h-4 w-4" /> {t('chat.message.react')}
-                                </Button>
-                                <Button variant="ghost" size="sm" onClick={handleReply} className="flex items-center gap-3 rounded-lg justify-start px-3 cursor-pointer">
-                                    <Reply className="h-4 w-4" /> {t('chat.message.reply')}
-                                </Button>
-                                {isMyMessage && isTextMessage(msg) && onEdit && (
-                                    <Button variant="ghost" size="sm" onClick={() => onEdit(msg)} className="flex items-center gap-3 rounded-lg justify-start px-3 cursor-pointer">
-                                        <Pencil className="h-4 w-4" /> {t('chat.message.edit')}
-                                    </Button>
-                                )}
-                                {isMyMessage && onDelete && (
-                                    <Button variant="ghost" size="sm" onClick={() => onDelete(msg.id)} className="flex items-center gap-3 rounded-lg justify-start px-3 cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/10">
-                                        <Trash2 className="h-4 w-4" /> {t('chat.message.delete')}
-                                    </Button>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </>
+            {menuVisible && !hasHover && menuAnchor && (
+                <MessageActionMenu
+                    anchor={menuAnchor}
+                    alignEnd={isMyMessage}
+                    onReact={handleReact}
+                    onClose={dismissMenu}
+                    actions={[
+                        { id: 'reply', label: t('chat.message.reply'), icon: Reply, onSelect: handleReply },
+                        ...(isTextMessage(msg) ? [{ id: 'copy', label: t('chat.message.copy'), icon: Copy, onSelect: handleCopy }] : []),
+                        ...(isMyMessage && isTextMessage(msg) && onEdit
+                            ? [{ id: 'edit', label: t('chat.message.edit'), icon: Pencil, onSelect: () => { setMenuVisible(false); onEdit(msg); } }]
+                            : []),
+                        ...(isMyMessage && onDelete
+                            ? [{ id: 'delete', label: t('chat.message.delete'), icon: Trash2, destructive: true, onSelect: () => { setMenuVisible(false); onDelete(msg.id); } }]
+                            : []),
+                    ] satisfies MessageAction[]}
+                />
             )}
         </>
     );
