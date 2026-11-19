@@ -15,6 +15,8 @@ function useReducedMotion(): boolean {
 }
 
 interface Particle {
+  x: number
+  y: number
   size: number
   duration: number
   delay: number
@@ -27,7 +29,10 @@ export default function AnimatedBackground() {
 
   useEffect(() => {
     const count = window.innerWidth < 768 ? 6 : 20
+    // Positions live in state: computing them during render made particles jump on every re-render.
     const newParticles = Array.from({ length: count }, () => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
       size: Math.random() * 6 + 2,
       duration: Math.random() * 20 + 15,
       delay: Math.random() * 5,
@@ -66,8 +71,8 @@ export default function AnimatedBackground() {
               key={i}
               className="absolute rounded-full dark:bg-emerald-400/30 bg-emerald-500/70 max-md:hidden"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: `${particle.x}%`,
+                top: `${particle.y}%`,
                 width: particle.size,
                 height: particle.size,
                 animationDuration: `${particle.duration}s`,

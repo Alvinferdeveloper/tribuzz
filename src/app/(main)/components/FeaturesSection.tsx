@@ -1,117 +1,91 @@
-'use client'
+"use client"
 
-import Image from "next/image";
-import { forwardRef } from "react";
-import Reveal from "@/src/app/(main)/components/Reveal";
-import { useTranslation } from '@/src/app/lib/i18n'
-import { Trans } from 'react-i18next'
+import Link from "next/link"
+import { forwardRef } from "react"
+import { ArrowRight } from "lucide-react"
+import { Trans } from "react-i18next"
+import { useTranslation } from "@/src/app/lib/i18n"
+import Reveal from "@/src/app/(main)/components/Reveal"
+import { CommunityIllustration, ExploreIllustration, SafetyIllustration } from "@/src/app/components/brand/FeatureIllustrations"
+import { tribeToneByKey, type TribeToneKey } from "@/src/app/utils/tribeColor"
+import { cn } from "@/src/lib/utils"
 
-const FeaturesSection = forwardRef<HTMLDivElement>((props, ref) => {
+type Feature = {
+    key: 1 | 2 | 3
+    tag: string
+    tone: TribeToneKey
+    href: string
+    Illustration: typeof ExploreIllustration
+}
+
+const FEATURES: Feature[] = [
+    { key: 1, tag: "tag_explore", tone: "coral", href: "/tribus", Illustration: ExploreIllustration },
+    { key: 2, tag: "tag_community", tone: "teal", href: "/tribus", Illustration: CommunityIllustration },
+    { key: 3, tag: "tag_privacy", tone: "violet", href: "/guia-comunidad", Illustration: SafetyIllustration },
+]
+
+/**
+ * "Discover. Connect. Share.": three zig-zag rows, each with its own SVG
+ * illustration built from the brand's bubbles and characters, tinted with
+ * one logo color. The label is a small colored bubble + word, not a number:
+ * these are three facets, not steps.
+ */
+const FeaturesSection = forwardRef<HTMLDivElement>((_, ref) => {
     const { t } = useTranslation()
 
-    const featureList = [
-        {
-            illustration: "/illustrations/themes.jpg",
-            title: t('landing.features.item_1_title'),
-            description: t('landing.features.item_1_desc'),
-            tag: t('landing.features.tag_explore')
-        },
-        {
-            illustration: "/illustrations/connection.svg",
-            title: t('landing.features.item_2_title'),
-            description: t('landing.features.item_2_desc'),
-            tag: t('landing.features.tag_community')
-        },
-        {
-            illustration: "/illustrations/security.jpg",
-            title: t('landing.features.item_3_title'),
-            description: t('landing.features.item_3_desc'),
-            tag: t('landing.features.tag_privacy')
-        },
-    ]
-
     return (
-        <section id="como-funciona" ref={ref} className="py-20 md:py-32  overflow-hidden">
-            <div className="container px-4 mx-auto md:px-6">
-
-                <Reveal direction="up" delay={0.1}>
-                    <div className="flex flex-col items-center max-w-4xl mx-auto text-center mb-20 md:mb-32">
-                        <span className="flex items-center px-5 py-2 mb-8 text-sm font-bold tracking-wide text-emerald-950 uppercase bg-[#D6F045] rounded-full shadow-sm cursor-default">
-                            {t('landing.features.badge')}
-                        </span>
-
-                        <h2 className="text-5xl font-black tracking-tighter text-gray-900 md:text-6xl lg:text-7xl dark:text-white leading-[1.1]">
-                            {t('landing.features.heading_discover')}<br className="hidden sm:block" />
-                            <span className="relative inline-block mt-2 sm:mt-4">
-                                <span className="relative z-10 text-emerald-900 dark:text-emerald-400">{t('landing.features.heading_share')}</span>
-                                <span className="absolute bottom-1 md:bottom-2 left-0 w-full h-4 md:h-6 bg-[#D6F045] -z-10 rounded-sm transform -rotate-1 opacity-90"></span>
-                            </span>
-                        </h2>
-
-                        <p className="mt-8 text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                            <Trans i18nKey="landing.features.description" components={{ bold: <span className="font-semibold text-emerald-700 dark:text-emerald-400" /> }} />
-                        </p>
-                    </div>
+        <section id="como-funciona" ref={ref} className="pt-10 pb-16 md:pt-14 md:pb-28">
+            <div className="mx-auto max-w-[1200px] px-4 md:px-6">
+                <Reveal direction="up" className="mb-16 max-w-3xl md:mb-24">
+                    <h2 className="text-balance text-[clamp(2.25rem,5vw,4rem)] font-bold leading-[1.05] tracking-tight">
+                        {t("landing.features.heading_discover")}{" "}
+                        <span className="text-primary">{t("landing.features.heading_share")}</span>
+                    </h2>
+                    <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+                        <Trans i18nKey="landing.features.description" components={{ bold: <span className="font-semibold text-foreground" /> }} />
+                    </p>
                 </Reveal>
 
-                <div className="flex flex-col gap-24 md:gap-40 max-w-7xl mx-auto">
-                    {featureList.map((feature, index) => (
-                        <Reveal key={index} direction={index % 2 === 0 ? "left" : "right"} delay={index * 0.2}>
-                            <div
-                                className={`flex flex-col gap-12 lg:gap-20 items-center ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-                                    }`}
-                            >
-                                <div className="w-full md:w-1/2 relative group">
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-[#D6F045] to-emerald-400 rounded-[3rem] blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700 z-0"></div>
-
-                                    <div className="relative z-10 aspect-square md:aspect-[4/3] w-full rounded-[3rem] overflow-hidden shadow-2xl border border-white/60 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
-                                        <div className="relative w-full h-full">
-                                            <Image
-                                                src={feature.illustration}
-                                                alt={feature.title}
-                                                fill
-                                                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                                                sizes="(max-width: 768px) 100vw, 50vw"
-                                            />
-                                        </div>
+                <div className="flex flex-col gap-20 md:gap-32">
+                    {FEATURES.map(({ key, tag, tone, href, Illustration }, index) => {
+                        const toneClasses = tribeToneByKey(tone)
+                        const reversed = index % 2 === 1
+                        return (
+                            <div key={key} className={cn("grid items-center gap-10 md:grid-cols-2 md:gap-16", reversed && "md:[&>*:first-child]:order-2")}>
+                                <Reveal direction={reversed ? "right" : "left"}>
+                                    <div className={cn("relative aspect-[4/3] w-full overflow-hidden rounded-[14px] p-6 ring-1 ring-border/60 sm:p-10", toneClasses.soft)}>
+                                        <Illustration label={t(`landing.features.item_${key}_alt`)} />
                                     </div>
-                                </div>
+                                </Reveal>
 
-                                <div className="w-full md:w-1/2 flex flex-col justify-center px-4 sm:px-8">
-                                    <div className="flex items-center gap-4 mb-6">
-                                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#1B3C35] text-[#D6F045] font-bold text-xl shadow-lg shadow-emerald-900/20">
-                                            {index + 1}
-                                        </div>
-                                        <span className="text-sm font-bold tracking-widest text-emerald-700 dark:text-emerald-400 uppercase">
-                                            {feature.tag}
-                                        </span>
-                                    </div>
-
-                                    <h3 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">
-                                        {feature.title}
+                                <Reveal direction="up" delay={0.1}>
+                                    <span className="mb-4 inline-flex items-center gap-2 text-sm font-semibold">
+                                        <span className={cn("size-3.5 rounded-[45%]", toneClasses.fill, toneClasses.tail)} aria-hidden="true" />
+                                        <span className={toneClasses.ink}>{t(`landing.features.${tag}`)}</span>
+                                    </span>
+                                    <h3 className="text-balance text-3xl font-bold leading-tight tracking-tight md:text-[2.5rem]">
+                                        {t(`landing.features.item_${key}_title`)}
                                     </h3>
-
-                                    <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed mb-10">
-                                        {feature.description}
+                                    <p className="mt-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
+                                        {t(`landing.features.item_${key}_desc`)}
                                     </p>
-
-                                    <a href="#" className="inline-flex items-center text-lg font-bold text-[#1B3C35] dark:text-[#D6F045] hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors w-fit group/link">
-                                        {t('landing.features.link_text')}
-                                        <svg className="w-6 h-6 ml-2 transform transition-transform group-hover/link:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                        </svg>
-                                    </a>
-                                </div>
+                                    <Link
+                                        href={href}
+                                        className="group mt-7 inline-flex items-center gap-2 text-base font-semibold text-primary transition-colors hover:text-primary/80"
+                                    >
+                                        {t(`landing.features.item_${key}_link`)}
+                                        <ArrowRight className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-1" />
+                                    </Link>
+                                </Reveal>
                             </div>
-                        </Reveal>
-                    ))}
+                        )
+                    })}
                 </div>
-
             </div>
         </section>
-    );
-});
+    )
+})
 
-FeaturesSection.displayName = "FeaturesSection";
+FeaturesSection.displayName = "FeaturesSection"
 
-export default FeaturesSection;
+export default FeaturesSection

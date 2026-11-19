@@ -5,13 +5,13 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Tooltip } from 'radix-ui';
-import { useTheme } from 'next-themes';
-import { Compass, LayoutGrid, Plus, Heart, Moon, Sun } from 'lucide-react';
+import { Compass, LayoutGrid, Plus, Heart } from 'lucide-react';
 import { useTranslation } from '@/src/app/lib/i18n';
 import { useAuth } from '@/src/app/hooks/useAuth';
 import useRoom from '@/src/app/tribus/hooks/useRoom';
 import { useRoomUserCounts } from '@/src/app/tribus/hooks/useRoomUserCounts';
 import { UserNav } from '@/src/app/components/layout/ProfileDropDown';
+import { ThemeIconButton } from '@/src/app/components/layout/ThemeIconButton';
 import { tribeTone } from '@/src/app/utils/tribeColor';
 import { cn } from '@/src/lib/utils';
 import { useAuthPrompt } from '@/src/app/components/auth/AuthPrompt';
@@ -100,7 +100,7 @@ export function TribeRail({ currentRoom }: { currentRoom?: CurrentRoom } = {}) {
                 </RailItem>
 
                 <div className="mt-auto flex flex-col items-center gap-3">
-                    <RailThemeButton />
+                    <ThemeIconButton />
                     <UserNav compact menuSide="right" menuAlign="end" />
                 </div>
             </nav>
@@ -265,23 +265,4 @@ function RailItem({ href, label, hint, caption = false, active = false, onClick,
 
 function RailDivider() {
     return <span aria-hidden="true" className="h-0.5 w-7 shrink-0 rounded-full bg-border" />;
-}
-
-function RailThemeButton() {
-    const { t } = useTranslation();
-    const { resolvedTheme, setTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
-    const isDark = mounted && resolvedTheme === 'dark';
-
-    return (
-        <button
-            type="button"
-            onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            aria-label={t('layout.theme.aria_label')}
-            className="flex size-10 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[background-color,color,transform] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-            {mounted && (isDark ? <Sun className="size-5" /> : <Moon className="size-5" />)}
-        </button>
-    );
 }

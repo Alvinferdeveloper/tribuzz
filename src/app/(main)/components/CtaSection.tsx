@@ -1,110 +1,79 @@
-'use client'
+"use client"
 
-import { Button } from "@/src/components/ui/button"
 import Link from "next/link"
-import Check from '@/src/app/components/icons/Check'
-import Image from "next/image"
 import { forwardRef } from "react"
-import { useTranslation } from '@/src/app/lib/i18n'
-import { Trans } from 'react-i18next'
+import { ArrowRight } from "lucide-react"
+import { useTranslation } from "@/src/app/lib/i18n"
+import { Buddy } from "@/src/app/components/brand/Buddy"
+import Reveal from "@/src/app/(main)/components/Reveal"
+import type { TribeToneKey } from "@/src/app/utils/tribeColor"
 
-const AboutAndCtaSection = forwardRef<HTMLDivElement>((props, ref) => {
+// The crowd peeking over the bottom edge, alternating logo colors.
+const CROWD: { tone: TribeToneKey; size: number }[] = [
+    { tone: "sun", size: 64 }, { tone: "teal", size: 84 }, { tone: "violet", size: 70 },
+    { tone: "sun", size: 92 }, { tone: "teal", size: 66 }, { tone: "violet", size: 80 },
+    { tone: "sun", size: 72 },
+]
+
+/**
+ * Closing call to action: a band drenched in the brand coral with the
+ * Buddies peeking over its bottom edge. Both buttons go somewhere real
+ * (explore as a guest, or sign up).
+ */
+const CtaSection = forwardRef<HTMLDivElement>((_, ref) => {
     const { t } = useTranslation()
+
     return (
-        <section id="acerca-de" ref={ref} className="py-20 md:py-32">
-            <div className="container px-4 mx-auto md:px-6">
+        <section id="unete" ref={ref} className="py-16 md:py-24">
+            <div className="mx-auto max-w-[1200px] px-4 md:px-6">
+                <Reveal direction="up">
+                    <div className="relative overflow-hidden rounded-[14px] bg-primary px-6 pt-14 pb-36 text-primary-foreground sm:px-12 md:pt-20 md:pb-40">
+                        {/* Soft logo-bubble glow behind the copy */}
+                        <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-[oklch(1_0_0/0.1)]" />
 
-                {/* Parte 1: Acerca de y Lista de Beneficios */}
-                <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center mb-24">
-                    <div className="flex flex-col space-y-8">
-                        <div className="space-y-6">
-                            <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
-                                <Trans i18nKey="landing.cta.heading" components={{ highlight: <span className="text-emerald-700" /> }} />
+                        <div className="relative max-w-2xl">
+                            <h2 className="text-balance text-[clamp(2.25rem,5vw,3.75rem)] font-bold leading-[1.05] tracking-tight">
+                                {t("landing.final.title")}
                             </h2>
-                            <p className="max-w-[600px] text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-                                {t('landing.cta.description')}
+                            <p className="mt-5 max-w-xl text-lg leading-relaxed opacity-90">
+                                {t("landing.final.subtitle")}
                             </p>
+                            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                                <Link
+                                    href="/tribus"
+                                    className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[oklch(0.99_0.004_255)] px-6 text-base font-semibold text-[oklch(0.2_0.04_265)] transition-[transform,background-color] duration-150 ease-out hover:bg-white active:scale-[0.97]"
+                                >
+                                    {t("landing.final.explore")}
+                                    <ArrowRight className="size-4" />
+                                </Link>
+                                <Link
+                                    href="/signup"
+                                    className="inline-flex h-12 items-center justify-center rounded-xl px-6 text-base font-semibold ring-2 ring-current/40 transition-[transform,background-color] duration-150 ease-out hover:bg-[oklch(1_0_0/0.12)] active:scale-[0.97]"
+                                >
+                                    {t("landing.final.signup")}
+                                </Link>
+                            </div>
                         </div>
-                        <div>
-                            <Button asChild size="lg" className="rounded-full px-8 text-base bg-emerald-800 hover:bg-emerald-900 text-white">
-                                <Link href="#temas">{t('landing.cta.explore_button')}</Link>
-                            </Button>
-                        </div>
-                    </div>
 
-                    {/* Lista estilizada como la imagen 3 pero adaptada a tus datos */}
-                    <div className="bg-[#F4F5F0] dark:bg-gray-900 p-8 md:p-10 rounded-[2.5rem]">
-                        <ul className="grid gap-8">
-                            <li className="flex items-start gap-5 group">
-                                <div className="flex items-center justify-center w-16 h-14 cursor-pointer  p-1.5 rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition">
-                                    <Image src="/images/comunidad.png" alt="" width={50} height={50} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('landing.cta.benefit_1_title')}</h3>
-                                    <p className="text-gray-600 dark:text-gray-400">{t('landing.cta.benefit_1_desc')}</p>
-                                </div>
-                            </li>
-                            <li className="flex items-start gap-5 group">
-                                <div className="flex items-center justify-center w-16 h-14 cursor-pointer  p-1.5 rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition">
-                                    <Image src="/images/custom_experience.png" alt="" width={50} height={50} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('landing.cta.benefit_2_title')}</h3>
-                                    <p className="text-gray-600 dark:text-gray-400">{t('landing.cta.benefit_2_desc')}</p>
-                                </div>
-                            </li>
-                            <li className="flex items-start gap-5 group">
-                                <div className="flex items-center justify-center w-16 h-14 cursor-pointer  p-1.5 rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition">
-                                    <Image src="/images/responsive.png" alt="" width={50} height={50} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('landing.cta.benefit_3_title')}</h3>
-                                    <p className="text-gray-600 dark:text-gray-400">{t('landing.cta.benefit_3_desc')}</p>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                {/* Parte 2: Estadísticas (Inspirado en Imagen 3) */}
-                <div className="bg-[#F8F9FA] dark:bg-gray-900 rounded-[2.5rem] p-10 md:p-16 mb-8 text-center border border-gray-100 dark:border-gray-800">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-800">
-                        <div className="flex flex-col items-center pt-8 md:pt-0">
-                            <h4 className="text-5xl md:text-6xl font-black text-emerald-800 dark:text-emerald-400 mb-2">2023</h4>
-                            <p className="text-gray-500 font-medium">{t('landing.stats.founded')}</p>
-                        </div>
-                        <div className="flex flex-col items-center pt-8 md:pt-0">
-                            <h4 className="text-5xl md:text-6xl font-black text-emerald-800 dark:text-emerald-400 mb-2">50K+</h4>
-                            <p className="text-gray-500 font-medium">{t('landing.stats.active_users')}</p>
-                        </div>
-                        <div className="flex flex-col items-center pt-8 md:pt-0">
-                            <h4 className="text-5xl md:text-6xl font-black text-emerald-800 dark:text-emerald-400 mb-2">1k+</h4>
-                            <p className="text-gray-500 font-medium">{t('landing.stats.rooms_created')}</p>
+                        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -bottom-5 flex items-end justify-center gap-3 sm:gap-5">
+                            {CROWD.map((b, i) => (
+                                <Buddy
+                                    key={i}
+                                    name={`${b.tone}-${i}`}
+                                    tone={b.tone}
+                                    size={b.size}
+                                    delay={i * 0.25}
+                                    className={i === 0 || i === CROWD.length - 1 ? "hidden sm:block" : undefined}
+                                />
+                            ))}
                         </div>
                     </div>
-                </div>
-
-                {/* Parte 3: El Gran Banner CTA Oscuro (Inspirado en la parte inferior de Imagen 3) */}
-                <div className="bg-[#1B3C35] rounded-[2rem] p-10 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8">
-                    <h2 className="text-3xl md:text-5xl font-bold text-white max-w-xl leading-tight">
-                        <Trans i18nKey="landing.cta.final_heading" components={{ highlight: <span className="underline decoration-[#D6F045] underline-offset-8" /> }} />
-                    </h2>
-
-                    <div className="flex flex-col sm:flex-row gap-4 shrink-0">
-                        <Button asChild variant="outline" className="rounded-full px-8 py-6 text-base font-semibold bg-white text-foreground border-none hover:bg-gray-100">
-                            <Link href="#demo">{t('landing.cta.demo_button')}</Link>
-                        </Button>
-                        <Button asChild className="rounded-full px-8 py-6 text-base font-semibold bg-[#D6F045] text-gray-900 hover:bg-[#c2db3b] shadow-none">
-                            <Link href="#registro">{t('landing.cta.start_free_button')}</Link>
-                        </Button>
-                    </div>
-                </div>
-
+                </Reveal>
             </div>
         </section>
     )
-});
+})
 
-AboutAndCtaSection.displayName = "AboutAndCtaSection";
+CtaSection.displayName = "CtaSection"
 
-export default AboutAndCtaSection;
+export default CtaSection

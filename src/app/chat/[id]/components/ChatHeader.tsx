@@ -1,8 +1,7 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Share2, Check, Moon, Sun, Users } from "lucide-react";
-import { useTheme } from "next-themes";
+import { ArrowLeft, Share2, Check, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
 import { RoomInfoDialog } from "@/src/app/chat/[id]/components/RoomInfoDialog";
 import { RoomInfo } from "@/src/app/chat/[id]/hooks/useRoomInfo";
@@ -10,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { cn } from "@/src/lib/utils";
 import { tribeTone } from "@/src/app/utils/tribeColor";
+import { ThemeIconButton } from "@/src/app/components/layout/ThemeIconButton";
 
 interface User {
     id: string;
@@ -134,7 +134,7 @@ export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggle
                     {justCopied ? <Check className="size-4 text-presence" /> : <Share2 className="size-4" />}
                 </button>
 
-                <ThemeIconButton className="md:hidden" />
+                <ThemeIconButton className="size-9 md:hidden" iconClassName="size-4" />
             </div>
 
             {room && (
@@ -146,22 +146,5 @@ export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggle
                 />
             )}
         </header>
-    );
-}
-
-function ThemeIconButton({ className }: { className?: string }) {
-    const { t } = useTranslation();
-    const { resolvedTheme, setTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
-    const isDark = mounted && resolvedTheme === "dark";
-    return (
-        <button
-            onClick={() => setTheme(isDark ? "light" : "dark")}
-            aria-label={t('layout.theme.aria_label')}
-            className={cn(ICON_BTN, className)}
-        >
-            {mounted && (isDark ? <Sun className="size-4" /> : <Moon className="size-4" />)}
-        </button>
     );
 }

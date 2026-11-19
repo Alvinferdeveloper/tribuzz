@@ -401,6 +401,53 @@
   .animate-bubble-wave { animation: bubble-fade 1.6s ease-in-out infinite; }
 }
 
+/* ------------------------------------------------------------------
+   Brand motion: shared by the brand components (src/app/components/brand)
+   on the chat scene and the landing. Add `brand-anim` to any animated
+   brand element so it pauses inside [data-paused="true"] and stops for
+   reduced motion.
+   ------------------------------------------------------------------ */
+@keyframes brand-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.brand-bob { animation: brand-bob 2.6s ease-in-out infinite; }
+@keyframes brand-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+.brand-blink { animation: brand-blink 4.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes brand-flicker {
+  0%, 100% { transform: scaleY(1) skewX(0deg); }
+  25% { transform: scaleY(1.1) skewX(-3deg); }
+  50% { transform: scaleY(0.94) skewX(2deg); }
+  75% { transform: scaleY(1.06) skewX(-1deg); }
+}
+.brand-flicker { animation: brand-flicker 1.4s ease-in-out infinite; transform-origin: 50% 100%; }
+/* Only scale: centering utilities use the separate CSS translate property. */
+@keyframes brand-glow { 0%, 100% { opacity: 0.75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
+.brand-glow { animation: brand-glow 2.2s ease-in-out infinite; }
+@keyframes brand-spark {
+  0% { transform: translate(0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translate(var(--sx, 0px), -80px); opacity: 0; }
+}
+.brand-spark { animation: brand-spark 2.6s ease-out infinite; }
+@keyframes brand-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.brand-float { animation: brand-float 5s ease-in-out infinite; }
+@keyframes brand-spin { to { transform: rotate(360deg); } }
+.brand-spin { animation: brand-spin 60s linear infinite; }
+@keyframes brand-firefly {
+  0%, 100% { transform: translate(0, 0); opacity: 0.2; }
+  25% { transform: translate(24px, -18px); opacity: 1; }
+  50% { transform: translate(-10px, -34px); opacity: 0.4; }
+  75% { transform: translate(-28px, -12px); opacity: 0.9; }
+}
+.brand-firefly { animation: brand-firefly 9s ease-in-out infinite; box-shadow: 0 0 8px 2px currentColor; }
+/* Seamless marquee: the track holds the items twice and slides by half. */
+@keyframes brand-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.brand-marquee { animation: brand-marquee var(--marquee-duration, 40s) linear infinite; }
+[data-paused="true"] .brand-anim,
+.brand-marquee-pause:hover .brand-anim,
+.brand-marquee-pause:focus-within .brand-anim { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .brand-anim { animation: none !important; }
+}
+
 /* Typing dots: a soft opacity wave instead of the bouncy default. */
 @keyframes typing-dot {
   0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
