@@ -883,14 +883,21 @@
     "landing.final.signup": "Crear cuenta gratis",
 
 
-    "error_page.title": "Ups!",
-    "error_page.subtitle": "Algo salió mal",
-    "error_page.description": "Hemos encontrado un error inesperado. Nuestro equipo ya ha sido notificado, pero mientras tanto puedes intentar recargar.",
+    "error_page.title": "Se apagó la fogata",
+    "error_page.description": "Tuvimos un problema inesperado al cargar esta pantalla. Intenta de nuevo y, si sigue pasando, vuelve en un rato.",
     "error_page.retry": "Intentar de nuevo",
 
-    "not_found.title": "Página no encontrada",
-    "not_found.description": "Lo sentimos, no pudimos encontrar la página que buscas. Es posible que haya sido eliminada o que la dirección sea incorrecta.",
-    "not_found.back_home": "Volver al Inicio",
+    "not_found.title": "Aquí no hay ninguna tribu",
+    "not_found.description": "Puede que el enlace esté mal escrito o que esta página ya no exista. Volvamos a donde está la conversación.",
+    "not_found.back_home": "Ir al inicio",
+    "not_found.kicker": "Error 404",
+    "not_found.speech": "¿Hola?",
+    "not_found.illustration_label": "Un personaje de Tribuzz solo en una isla pregunta si hay alguien, mientras su tribu se reúne a lo lejos junto a una fogata.",
+    "not_found.explore": "Explorar tribus",
+    "error_page.kicker": "Algo falló",
+    "error_page.illustration_label": "Dos personajes de Tribuzz junto a una fogata que se acaba de apagar.",
+    "error_page.back_home": "Ir al inicio",
+    "error_page.reference": "Referencia del error: {{code}}",
 
     "maintenance.title": "Tribuzz en Mantenimiento",
     "maintenance.description": "Estamos mejorando la plataforma para brindarte una experiencia increíble. Volveremos muy pronto.",

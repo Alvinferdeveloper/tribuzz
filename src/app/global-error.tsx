@@ -2,7 +2,14 @@
 
 import { useEffect } from 'react'
 import { Button } from '@/src/components/ui/button'
+import { useTranslation } from '@/src/app/lib/i18n'
+import { StatusScreen, NIGHT_OUTLINE_BUTTON } from '@/src/app/components/layout/StatusScreen'
+import './globals.css'
 
+/**
+ * Last-resort error page: it replaces the root layout, so it brings its own
+ * <html>, styles and (default-language) copy. Same scene as error.tsx.
+ */
 export default function GlobalError({
   error,
   reset,
@@ -10,24 +17,34 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const { t } = useTranslation()
+
   useEffect(() => {
     console.error(error)
   }, [error])
 
   return (
-    <html>
+    <html lang="es" className="dark">
       <body>
-        <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center font-sans antialiased">
-          <div className="mb-4">
-            <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">Critical Error</h1>
-          </div>
-          <p className="mb-8 max-w-[500px] text-muted-foreground">
-            A critical error occurred and the application cannot continue.
-          </p>
-          <Button onClick={() => reset()} variant="destructive" className="cursor-pointer">
-            Try again
-          </Button>
-        </div>
+        <StatusScreen
+          variant="fire-out"
+          kicker={t('error_page.kicker')}
+          title={t('error_page.title')}
+          text={t('error_page.description')}
+          illustrationLabel={t('error_page.illustration_label')}
+          actions={
+            <>
+              <Button size="lg" className="h-12 px-6 text-base" onClick={() => reset()}>
+                {t('error_page.retry')}
+              </Button>
+              {/* A plain link: the app's router may be what broke. */}
+              <Button asChild variant="outline" size="lg" className={NIGHT_OUTLINE_BUTTON}>
+                <a href="/">{t('error_page.back_home')}</a>
+              </Button>
+            </>
+          }
+          footnote={error.digest ? t('error_page.reference', { code: error.digest }) : undefined}
+        />
       </body>
     </html>
   )

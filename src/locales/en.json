@@ -883,14 +883,21 @@
     "landing.final.signup": "Create a free account",
 
 
-    "error_page.title": "Oops!",
-    "error_page.subtitle": "Something went wrong",
-    "error_page.description": "We found an unexpected error. Our team has been notified, but in the meantime you can try reloading.",
+    "error_page.title": "The campfire went out",
+    "error_page.description": "We hit an unexpected problem loading this screen. Try again and, if it keeps happening, come back in a while.",
     "error_page.retry": "Try again",
 
-    "not_found.title": "Page not found",
-    "not_found.description": "Sorry, we couldn't find the page you're looking for. It may have been removed or the address may be incorrect.",
-    "not_found.back_home": "Back to Home",
+    "not_found.title": "There's no tribe here",
+    "not_found.description": "The link may be mistyped or this page may no longer exist. Let's get back to where the conversation is.",
+    "not_found.back_home": "Go home",
+    "not_found.kicker": "Error 404",
+    "not_found.speech": "Hello?",
+    "not_found.illustration_label": "A Tribuzz character alone on an island asks if anyone is there, while its tribe gathers around a campfire far away.",
+    "not_found.explore": "Explore tribes",
+    "error_page.kicker": "Something went wrong",
+    "error_page.illustration_label": "Two Tribuzz characters by a campfire that just went out.",
+    "error_page.back_home": "Go home",
+    "error_page.reference": "Error reference: {{code}}",
 
     "maintenance.title": "Tribuzz Under Maintenance",
     "maintenance.description": "We are improving the platform to bring you an incredible experience. We'll be back very soon.",
