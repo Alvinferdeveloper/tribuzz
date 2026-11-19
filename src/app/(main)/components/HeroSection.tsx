@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar"
 import { useTranslation } from "@/src/app/lib/i18n"
 import { Buddy } from "@/src/app/components/brand/Buddy"
 import { Moon } from "@/src/app/components/brand/Moon"
+import { BubbleKicker } from "@/src/app/components/brand/BubbleKicker"
 import { tribeTone, tribeToneByKey } from "@/src/app/utils/tribeColor"
 import { cn } from "@/src/lib/utils"
 
@@ -39,13 +40,7 @@ const HeroSection = forwardRef<HTMLDivElement>((_, ref) => {
         <section ref={ref} id="hero" className="relative pt-14 pb-6 md:pt-20 md:pb-8">
             <div className="mx-auto grid w-full max-w-[1200px] items-center gap-12 px-4 md:px-6 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
                 <div className="flex flex-col items-start">
-                    <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-card/80 px-3 py-1 text-sm font-semibold text-foreground ring-1 ring-border/70 backdrop-blur-sm">
-                        <span className="relative flex size-2">
-                            <span className="absolute inline-flex size-full rounded-full bg-presence/70 animate-ping [animation-duration:2.4s] motion-reduce:hidden" />
-                            <span className="relative inline-flex size-2 rounded-full bg-presence" />
-                        </span>
-                        {t("landing.hero.badge")}
-                    </span>
+                    <BubbleKicker className="mb-6">{t("landing.hero.badge")}</BubbleKicker>
 
                     <h1 className="text-balance text-[clamp(2.5rem,6vw,4.75rem)] font-bold leading-[1.02] tracking-tight">
                         <Trans i18nKey="landing.hero.title" components={{ highlight: <span className="text-primary" /> }} />

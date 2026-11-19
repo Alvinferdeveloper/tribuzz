@@ -48,10 +48,7 @@ export function RoomCardContent({ name, description, verified, userCount, isConn
                     "inline-flex items-center gap-1.5 rounded-full px-2 py-1 font-semibold tabular-nums",
                     isLive ? "bg-presence/12 text-foreground" : "bg-muted text-muted-foreground"
                 )}>
-                    <span className="relative flex size-1.5">
-                        {isLive && <span className="absolute inline-flex size-full rounded-full bg-presence/70 animate-ping [animation-duration:2.4s] motion-reduce:hidden" />}
-                        <span className={cn("relative inline-flex size-1.5 rounded-full", isLive ? "bg-presence" : "bg-muted-foreground/50")} />
-                    </span>
+                    <span aria-hidden="true" className={cn("size-1.5 rounded-full", isLive ? "bg-presence" : "bg-muted-foreground/50")} />
                     {t('rooms.card.active_users', { count: userCount || 0 })}
                 </span>
 

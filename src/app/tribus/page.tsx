@@ -16,6 +16,7 @@ import { useDebounce } from '@/src/app/hooks/useDebounce';
 import { Search, X, TriangleAlert, Compass } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { cn } from '@/src/lib/utils';
+import { BubbleKicker } from '@/src/app/components/brand/BubbleKicker';
 import { APP_NAME } from '@/src/app/constants';
 import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
@@ -106,13 +107,7 @@ export default function Rooms() {
                         transition={{ duration: 0.45, ease: EASE_OUT }}
                         className="max-w-xl"
                     >
-                        <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-[oklch(0.16_0.04_265/0.5)] px-3 py-1 text-xs font-semibold text-white/90 ring-1 ring-white/15">
-                            <span className="relative flex size-2">
-                                <span className="absolute inline-flex size-full rounded-full bg-presence/70 animate-ping [animation-duration:2.4s] motion-reduce:hidden" />
-                                <span className="relative inline-flex size-2 rounded-full bg-presence" />
-                            </span>
-                            {t('rooms.hero.badge')}
-                        </p>
+                        <BubbleKicker variant="glass" animated={false} className="mb-4">{t('rooms.hero.badge')}</BubbleKicker>
 
                         <h1 className="text-balance text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl">
                             {t('rooms.hero.title').split(APP_NAME).map((part, i, arr) => (
