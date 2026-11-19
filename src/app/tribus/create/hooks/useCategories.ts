@@ -1,52 +1,31 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { errorCode } from '@/src/lib/api/client';
+import { fetchCategories } from '@/src/app/tribus/api/categories';
+import { categoryKeys } from '@/src/app/tribus/api/queryKeys';
 
-export interface Category {
-    id: string;
-    name: string;
-    icon: string | null;
-}
+// Domain type lives with the API module; re-exported for existing imports.
+export type { Category } from '@/src/app/tribus/api/categories';
 
+/** Categories rarely change: one fetch serves every screen for a while. */
+const CATEGORIES_STALE_MS = 10 * 60_000;
+
+/**
+ * Tribe categories for the explore filter and the category pickers. Shared
+ * cache: the filter, create, edit and admin dialogs all read the same list.
+ */
 export function useCategories() {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const fetchCategories = useCallback(async (search?: string) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const params = new URLSearchParams();
-            params.set('limit', '10');
-            if (search) params.set('q', search);
-
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/categories?${params}`,
-                { credentials: 'include' }
-            );
-
-            if (!response.ok) {
-                throw new Error('CATEGORIES_LOAD_ERROR');
-            }
-
-            const result = await response.json();
-            setCategories(result.data || []);
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchCategories();
-    }, [fetchCategories]);
+    const query = useQuery({
+        queryKey: categoryKeys.list(),
+        queryFn: () => fetchCategories(),
+        staleTime: CATEGORIES_STALE_MS,
+    });
 
     return {
-        categories,
-        loading,
-        error,
-        refetch: fetchCategories,
+        categories: query.data ?? [],
+        loading: query.isPending,
+        error: query.error ? errorCode(query.error, 'CATEGORIES_LOAD_ERROR') : null,
+        refetch: query.refetch,
     };
 }

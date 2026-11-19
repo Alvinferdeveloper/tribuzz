@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { Room } from '@/src/app/tribus/hooks/useRoom';
+import { toggleRoomFavorite } from '@/src/app/tribus/api/rooms';
+import { syncFavoriteInCache } from '@/src/app/tribus/api/roomsCache';
 import { emitFavoriteChange } from '@/src/app/tribus/utils/favoriteEvents';
 
 export function useFavoriteRoom(roomId: string, initialIsFavorite: boolean = false, room?: Room) {
+    const queryClient = useQueryClient();
     const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -21,17 +25,9 @@ export function useFavoriteRoom(roomId: string, initialIsFavorite: boolean = fal
         setIsLoading(true);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/rooms/${roomId}/favorite`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include'
-            });
-
-            if (!res.ok) {
-                throw new Error('Failed to toggle favorite');
-            }
+            await toggleRoomFavorite(roomId);
+            // Cached lists (explore, favorites) reflect it when you return to them.
+            syncFavoriteInCache(queryClient, roomId, nextState);
         } catch (error) {
             // Revert on error, everywhere it was shown.
             console.error('Error toggling favorite:', error);

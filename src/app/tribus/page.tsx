@@ -183,7 +183,7 @@ export default function Rooms() {
                             <TriangleAlert className="size-6" />
                         </div>
                         <h2 className="text-lg font-semibold">{t('rooms.error.title')}</h2>
-                        <p className="mt-1 mb-6 max-w-md text-sm text-muted-foreground">{error}</p>
+                        <p className="mt-1 mb-6 max-w-md text-sm text-muted-foreground">{t(error, { defaultValue: t('ROOMS_GENERIC_ERROR') })}</p>
                         <Button onClick={retry}>{t('rooms.error.retry')}</Button>
                     </div>
                 ) : (
@@ -223,7 +223,7 @@ export default function Rooms() {
 
                         {error && rooms.length > 0 && (
                             <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl bg-destructive/5 p-6 text-center">
-                                <p className="text-sm font-medium text-destructive">{error}</p>
+                                <p className="text-sm font-medium text-destructive">{t(error, { defaultValue: t('ROOMS_GENERIC_ERROR') })}</p>
                                 <Button variant="outline" size="sm" onClick={retry}>
                                     {t('rooms.load_more.retry')}
                                 </Button>
