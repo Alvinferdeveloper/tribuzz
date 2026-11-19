@@ -1,8 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card';
-import { Button } from '@/src/components/ui/button';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import { Metadata } from "next";
+import { VerifyEmailResult } from './VerifyEmailResult';
 
 export const metadata: Metadata = {
     title: "Verificación de Correo",
@@ -13,30 +11,19 @@ export const metadata: Metadata = {
     },
 };
 
+/**
+ * Landing spot of the verification link. better-auth redirects here with
+ * `?success=true` (our callbackURL) and, when the link failed, appends
+ * `&error=<CODE>` (TOKEN_EXPIRED, INVALID_TOKEN, USER_NOT_FOUND…).
+ */
 export default async function VerifyEmailPage({
     searchParams,
 }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
     const params = await searchParams;
-    const success = params.success === 'true';
-    if (!success) redirect('/login');
-    return (
-        <main className="min-h-screen bg-background flex items-center justify-center p-4">
-            <Card className="w-full max-w-md">
-                <CardHeader>
-                    <CardTitle className="text-center">Verificación de Correo</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-center">
-                        <p>¡Tu correo ha sido verificado exitosamente!</p>
-                        <Link href="/login" className="underline">
-                            <Button className="mt-4">
-                                Ir a Iniciar Sesión
-                            </Button></Link>
-                    </div>
-                </CardContent>
-            </Card>
-        </main>
-    );
+    const error = typeof params.error === 'string' ? params.error : undefined;
+    if (params.success !== 'true' && !error) redirect('/login');
+
+    return <VerifyEmailResult error={error} />;
 }

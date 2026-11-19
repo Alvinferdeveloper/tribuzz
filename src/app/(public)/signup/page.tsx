@@ -1,58 +1,38 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
 import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 import { authClient } from '@/src/app/lib/auth-client';
-import Image from 'next/image';
-import { ArrowLeft, MailCheck } from "lucide-react";
 import { AuthSplitScreen } from '@/src/app/components/auth/AuthSplitScreen';
-import { APP_NAME } from '@/src/app/constants';
+import {
+  AuthDivider, AuthField, AuthHeading, FormAlert, PasswordField,
+  SocialAuthButtons, useAuthErrorMessage,
+} from '@/src/app/components/auth/AuthFormParts';
+import { Buddy } from '@/src/app/components/brand/Buddy';
+import { IconBubbleMail } from '@/src/app/components/brand/icons';
 
-const container = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.07,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.23, 1, 0.32, 1] as const,
-    },
-  },
-};
+/** better-auth's default minimum; keep the hint and the input in sync with it. */
+const MIN_PASSWORD_LENGTH = 8;
 
 export default function SignupPage() {
-  const router = useRouter();
   const { t } = useTranslation();
+  const errorMessage = useAuthErrorMessage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const { data, error } = await authClient.signUp.email({
+    const { error } = await authClient.signUp.email({
       name,
       email,
       password,
@@ -60,149 +40,100 @@ export default function SignupPage() {
     });
 
     setLoading(false);
-
     if (error) {
-      setError(error.message || t('auth.signup.error.fallback'));
-    } else {
-      setSuccess(true);
+      setError(errorMessage(error, 'auth.signup.error.fallback'));
+      return;
     }
+    setSentTo(email);
   };
 
-  if (success) {
-    return (
-      <main className="min-h-[100dvh] flex items-center justify-center px-6 bg-background">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] as const }}
-          className="w-full max-w-sm text-center"
-        >
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <MailCheck className="w-8 h-8 text-primary" />
-            </div>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">
-            {t('auth.signup.success.title')}
-          </h1>
-          <div className="space-y-1 text-sm text-muted-foreground mb-8">
-            <p>{t('auth.signup.success.message1')}</p>
-            <p>{t('auth.signup.success.message2')}</p>
-          </div>
-          <Button
-            variant="outline"
-            className="w-full cursor-pointer"
-            onClick={() => router.push('/login')}
-          >
-            {t('auth.signup.success.go_to_login')}
-          </Button>
-        </motion.div>
-      </main>
-    );
-  }
-
   return (
-    <AuthSplitScreen
-      illustrationUrl='/illustrations/themes_auth.png'
-    >
-      <div className="flex flex-col min-h-full">
-        <div className="mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-            className="group flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-foreground -ml-2"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-            <span>{t('auth.signup.back')}</span>
-          </Button>
-        </div>
+    <AuthSplitScreen variant="signup">
+      {sentTo ? (
+        <CheckYourInbox email={sentTo} />
+      ) : (
+        <div className="space-y-7">
+          <AuthHeading title={t('auth.signup.title')} subtitle={t('auth.signup.subtitle')} />
 
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="flex justify-center mb-2">
-            <Link href="/">
-              <Image src="/images/logo_chat.png" width={50} height={50} alt={APP_NAME} priority className="h-auto" />
-            </Link>
-          </div>
+          <SocialAuthButtons />
 
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="visible"
-            className="space-y-5"
-          >
-            <motion.div variants={item} className="text-center">
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                {t('auth.signup.title')}
-              </h1>
-              <p className="mt-1.5 text-sm text-muted-foreground">
-                {t('auth.signup.subtitle')}
+          <AuthDivider label={t('auth.signup.or_with_email')} />
+
+          <form onSubmit={handleSignup} className="space-y-4">
+            <AuthField
+              id="name"
+              autoComplete="name"
+              label={t('auth.signup.name_label')}
+              placeholder={t('auth.signup.name_placeholder')}
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <AuthField
+              id="email"
+              type="email"
+              autoComplete="email"
+              label={t('auth.signup.email_label')}
+              placeholder={t('auth.signup.email_placeholder')}
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <div className="space-y-1.5">
+              <PasswordField
+                id="password"
+                autoComplete="new-password"
+                label={t('auth.signup.password_label')}
+                required
+                minLength={MIN_PASSWORD_LENGTH}
+                aria-describedby="password-hint"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <p id="password-hint" className="text-xs text-muted-foreground">
+                {t('auth.signup.password_hint', { count: MIN_PASSWORD_LENGTH })}
               </p>
-            </motion.div>
+            </div>
 
-            <motion.div variants={item}>
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">{t('auth.signup.name_label')}</Label>
-                  <Input
-                    id="name"
-                    placeholder={t('auth.signup.name_placeholder')}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">{t('auth.signup.email_label')}</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder={t('auth.signup.email_placeholder')}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">{t('auth.signup.password_label')}</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder={t('auth.signup.password_placeholder')}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="h-11"
-                  />
-                </div>
+            {error && <FormAlert message={error} />}
 
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-lg"
-                  >
-                    {error}
-                  </motion.p>
-                )}
+            <Button type="submit" size="lg" className="h-12 w-full text-base" disabled={loading}>
+              {loading && <BubbleLoader size="sm" mono />}
+              {loading ? t('auth.signup.loading') : t('auth.signup.submit')}
+            </Button>
+          </form>
 
-                <Button type="submit" className="w-full h-11 cursor-pointer" disabled={loading}>
-                  {loading ? t('auth.signup.loading') : t('auth.signup.submit')}
-                </Button>
-              </form>
-            </motion.div>
-
-            <motion.div variants={item} className="text-center text-sm text-muted-foreground pt-2">
-              {t('auth.signup.has_account')}{' '}
-              <Link href="/login" className="underline font-medium hover:text-primary transition-colors">
-                {t('auth.signup.login_link')}
-              </Link>
-            </motion.div>
-          </motion.div>
+          <p className="text-sm text-muted-foreground">
+            {t('auth.signup.has_account')}{' '}
+            <Link href="/login" className="font-semibold text-primary underline-offset-4 hover:underline">
+              {t('auth.signup.login_link')}
+            </Link>
+          </p>
         </div>
-      </div>
+      )}
     </AuthSplitScreen>
+  );
+}
+
+/** After signing up: a Buddy holding the envelope, and what to do next. */
+function CheckYourInbox({ email }: { email: string }) {
+  const { t } = useTranslation();
+  return (
+    <div>
+      <div aria-hidden="true" className="relative mb-7 h-[104px] w-[150px]">
+        <span className="brand-anim brand-float absolute right-0 top-0 flex size-[58px] items-center justify-center rounded-[20px] rounded-bl-[6px] bg-tribe-sun text-[oklch(0.2_0.04_265)]">
+          <IconBubbleMail className="size-7" />
+        </span>
+        <Buddy name="inbox" tone="teal" size={74} className="absolute bottom-0 left-0" />
+      </div>
+      <AuthHeading
+        title={t('auth.signup.success.title')}
+        subtitle={t('auth.signup.success.message', { email })}
+      />
+      <p className="mt-3 text-sm text-muted-foreground">{t('auth.signup.success.spam_hint')}</p>
+      <Button asChild variant="outline" size="lg" className="mt-7 h-12 w-full text-base">
+        <Link href="/login">{t('auth.signup.success.go_to_login')}</Link>
+      </Button>
+    </div>
   );
 }

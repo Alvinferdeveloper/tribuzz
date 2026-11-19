@@ -1,70 +1,17 @@
 "use client";
 
 import { tribeToneByKey, type TribeToneKey } from "@/src/app/utils/tribeColor";
-import { bubblePath, type BubbleCorner } from "@/src/app/components/brand/bubblePath";
-import { Buddy } from "@/src/app/components/brand/Buddy";
-import { usePauseWhenHidden } from "@/src/app/components/brand/usePauseWhenHidden";
+import { INK, IllustrationFrame, Float, Bubble, TextLines, PlacedBuddy } from "@/src/app/components/brand/illustration-kit";
 
 /**
- * Hand-built SVG illustrations for the landing's feature sections, drawn
- * only with the brand's own pieces: logo-colored speech bubbles (bubblePath)
- * and Buddy characters. Colors come from CSS variables, so they follow the
- * light/dark theme. Gentle float motion uses the shared `brand-*` classes.
+ * Hand-built SVG illustrations for the landing's feature sections, made
+ * with the shared illustration kit (logo bubbles + Buddies).
  */
 
-const INK = "oklch(0.2 0.04 265)";
 const VIEW = "0 0 480 360";
 
-/* ---------------------------------------------------------------- helpers */
-
 function Frame({ children, label }: { children: React.ReactNode; label: string }) {
-    const ref = usePauseWhenHidden<HTMLDivElement>();
-    return (
-        <div ref={ref} className="h-full w-full">
-            <svg viewBox={VIEW} role="img" aria-label={label} className="h-full w-full overflow-visible">
-                {children}
-            </svg>
-        </div>
-    );
-}
-
-/** A floating group; `delay` staggers it against its neighbors. */
-function Float({ children, delay = 0, duration = 5 }: { children: React.ReactNode; delay?: number; duration?: number }) {
-    return (
-        <g
-            className="brand-anim brand-float"
-            style={{ transformBox: "fill-box", animationDelay: `${delay}s`, animationDuration: `${duration}s` }}
-        >
-            {children}
-        </g>
-    );
-}
-
-function Bubble({ x, y, w, h, tone, corner, opacity = 1 }: { x: number; y: number; w: number; h: number; tone: TribeToneKey; corner?: BubbleCorner; opacity?: number }) {
-    const t = tribeToneByKey(tone);
-    return <path d={bubblePath(x, y, w, h, corner ?? (t.corner as BubbleCorner))} fill={t.color} opacity={opacity} />;
-}
-
-/** Placeholder "text" lines inside a message bubble. */
-function TextLines({ x, y, widths, color = "oklch(1 0 0 / 0.75)" }: { x: number; y: number; widths: number[]; color?: string }) {
-    return (
-        <>
-            {widths.map((w, i) => (
-                <rect key={i} x={x} y={y + i * 11} width={w} height="5" rx="2.5" fill={color} />
-            ))}
-        </>
-    );
-}
-
-/** A Buddy positioned inside an SVG (Buddy renders its own nested <svg>). */
-function PlacedBuddy({ x, y, size, tone, delay = 0 }: { x: number; y: number; size: number; tone: TribeToneKey; delay?: number }) {
-    return (
-        <Float delay={delay} duration={3.2}>
-            <g transform={`translate(${x} ${y})`}>
-                <Buddy name={tone} tone={tone} size={size} animated={false} />
-            </g>
-        </Float>
-    );
+    return <IllustrationFrame viewBox={VIEW} label={label}>{children}</IllustrationFrame>;
 }
 
 /* ---------------------------------------------------------------- glyphs */

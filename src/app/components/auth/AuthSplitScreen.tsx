@@ -1,53 +1,67 @@
+'use client';
+
 import { type ReactNode } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
+import { ThemeToggle } from '@/src/app/components/layout/ThemeToggle';
+import { NightSky } from '@/src/app/components/brand/NightSky';
+import { BubbleKicker } from '@/src/app/components/brand/BubbleKicker';
+import { AuthIllustration, type AuthIllustrationVariant } from '@/src/app/components/brand/AuthIllustration';
+import { APP_NAME } from '@/src/app/constants';
 
 interface AuthSplitScreenProps {
   children: ReactNode;
-  illustrationUrl?: string;
+  /** Which story the brand panel tells (and how the tribe greets you). */
+  variant: AuthIllustrationVariant;
 }
 
-export function AuthSplitScreen({ children, illustrationUrl }: AuthSplitScreenProps) {
+/**
+ * Frame for the auth screens. Left: the form, on the app surface (follows
+ * the theme). Right, desktop only: the brand panel, always night navy, with
+ * the tribe-around-the-fire illustration.
+ */
+export function AuthSplitScreen({ children, variant }: AuthSplitScreenProps) {
+  const { t } = useTranslation();
+
   return (
-    <main className="min-h-[100dvh] flex">
-      <section className="flex-1 flex items-center justify-center px-6 lg:px-12 py-8 bg-background">
-        <div className="w-full max-w-sm">
-          {children}
+    <main className="flex min-h-dvh bg-background text-foreground">
+      <section className="flex min-w-0 flex-1 flex-col px-5 py-5 sm:px-10 lg:px-14">
+        <header className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
+            <Image src="/images/logo_chat.png" width={30} height={30} alt="" priority className="size-[30px]" />
+            <span className="text-lg font-bold tracking-tight">{APP_NAME}</span>
+          </Link>
+          <ThemeToggle />
+        </header>
+
+        <div className="flex flex-1 items-center justify-center py-10">
+          <div className="w-full max-w-[380px]">{children}</div>
         </div>
       </section>
 
-      <section className="hidden lg:flex flex-1 relative overflow-hidden bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5">
-        <div className="flex h-full w-full flex-col">
-          <div className="flex flex-col items-center justify-center pt-16 pb-4 px-16 text-center">
-            <div className="mb-5 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.25em] text-muted-foreground/60">
-              <span className="h-px w-8 bg-border" />
-              Bienvenido a
-              <span className="h-px w-8 bg-border" />
-            </div>
-            <h2 className="text-5xl font-bold tracking-tight text-foreground">
-              Tribu<span className="text-primary">zz</span>
-            </h2>
-            <div className="mt-5 h-1 w-12 rounded-full bg-primary/30 mx-auto" />
-            <p className="mt-5 text-base text-muted-foreground/80 max-w-sm leading-relaxed">
-              Donde cada <span className="font-semibold text-foreground">conversacion</span> encuentra su lugar
-            </p>
-          </div>
+      <aside className="relative hidden w-[min(46vw,640px)] shrink-0 overflow-hidden text-white lg:flex lg:flex-col">
+        <NightSky stars={[70, 30]} fireflies={6} />
 
-          <div className="flex-1 relative px-16 pb-16">
-            {illustrationUrl ? (
-              <img
-                src={illustrationUrl}
-                alt=""
-                className="absolute inset-0 w-full h-full object-contain p-6"
-              />
-            ) : (
-              <>
-                <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full border border-primary/10 animate-[float_12s_ease-in-out_infinite]" />
-                <div className="absolute -bottom-32 -left-16 w-[30rem] h-[30rem] rounded-full border border-primary/10 animate-[float_15s_ease-in-out_infinite_reverse]" />
-                <div className="absolute top-1/3 left-1/2 w-64 h-64 rounded-full bg-primary/5 blur-3xl animate-[pulse-glow_8s_ease-in-out_infinite]" />
-              </>
-            )}
+        <div className="relative px-12 pt-14 xl:px-16">
+          <BubbleKicker variant="glass" animated={false}>{t('auth.showcase.kicker')}</BubbleKicker>
+          <h2 className="mt-5 max-w-md text-balance text-4xl font-bold leading-[1.08] tracking-tight xl:text-[2.75rem]">
+            {t('auth.showcase.title_before')}{' '}
+            <span className="text-tribe-sun">{t('auth.showcase.title_highlight')}</span>
+          </h2>
+          <p className="mt-4 max-w-sm text-base leading-relaxed text-white/70">{t('auth.showcase.subtitle')}</p>
+        </div>
+
+        <div className="relative mt-auto px-6 pb-6 xl:px-10">
+          <div className="mx-auto aspect-[520/440] w-full max-w-[560px]">
+            <AuthIllustration
+              variant={variant}
+              greeting={t(`auth.showcase.greeting_${variant}`)}
+              label={t('auth.showcase.illustration_label')}
+            />
           </div>
         </div>
-      </section>
+      </aside>
     </main>
   );
 }
