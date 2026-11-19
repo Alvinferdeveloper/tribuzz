@@ -3,13 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useSession } from './SessionProvider';
 import { usePathname } from 'next/navigation';
-import { Hammer, Loader2, Sparkles } from 'lucide-react';
+import { Hammer, Sparkles } from 'lucide-react';
 import { useTranslation } from '@/src/app/lib/i18n';
 import { useCachedOnMount } from '@/src/app/hooks/useCachedOnMount';
 import { setSessionCache } from '@/src/app/utils/sessionCache';
 
-// Cached (see sessionCache) so a returning tab doesn't have to block the
-// whole app behind a full-screen spinner while it re-checks maintenance mode.
+// The app renders right away and only swaps to the maintenance screen if the
+// check says so: maintenance is rare, so blocking every page load behind a
+// loader for it isn't worth it (the backend 503s requests anyway). The
+// verdict is cached (see sessionCache) so a reload during maintenance shows
+// the maintenance screen from the first paint instead of flashing the app.
 const MAINTENANCE_CACHE_KEY = 'maintenance_check_cache';
 const MAINTENANCE_CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -18,15 +21,9 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { t } = useTranslation()
     const [maintenanceActive, setMaintenanceActive] = useState(false);
-    const [loading, setLoading] = useState(true);
 
-    // Adopt a recent cached verdict before paint, so a tab that reloaded
-    // itself in the background doesn't flash a full-screen loader for a
-    // check we already answered moments ago.
-    useCachedOnMount<boolean>(MAINTENANCE_CACHE_KEY, MAINTENANCE_CACHE_TTL_MS, (isActive) => {
-        setMaintenanceActive(isActive);
-        setLoading(false);
-    });
+    // Adopt a recent cached verdict before paint.
+    useCachedOnMount<boolean>(MAINTENANCE_CACHE_KEY, MAINTENANCE_CACHE_TTL_MS, setMaintenanceActive);
 
     const checkMaintenance = async () => {
         try {
@@ -40,8 +37,6 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
             }
         } catch (error) {
             console.error('Error fetching system settings:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -61,14 +56,6 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
 
     // If maintenance is active, user is NOT admin, and it's not a bypass route
     const showMaintenanceScreen = maintenanceActive && !isUserAdmin && !isAdminRoute;
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
-    }
 
     if (showMaintenanceScreen) {
         return (
