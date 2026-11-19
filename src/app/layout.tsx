@@ -6,6 +6,7 @@ import { SocketEventProvider } from "@/src/app/components/providers/SocketEventP
 import { SessionProvider } from "@/src/app/components/providers/SessionProvider";
 import { MaintenanceGuard } from "@/src/app/components/providers/MaintenanceGuard";
 import { I18nProvider } from "@/src/app/components/providers/I18nProvider";
+import { QueryProvider } from "@/src/app/components/providers/QueryProvider";
 import { Toaster } from "@/src/components/ui/sonner";
 import { JsonLd } from "@/src/components/seo/JsonLd";
 import { APP_NAME, APP_URL } from "@/src/app/constants";
@@ -141,18 +142,20 @@ export default function RootLayout({
       </head>
       <body className={chillax.className}>
         <I18nProvider>
-          <SessionProvider>
-            <SocketEventProvider>
-              <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                <MaintenanceGuard>
-                  <div className="flex flex-col min-h-screen">
-                    <div className="flex-1">{children}</div>
-                  </div>
-                </MaintenanceGuard>
-                <Toaster richColors closeButton position="top-right" />
-              </ThemeProvider>
-            </SocketEventProvider>
-          </SessionProvider>
+          <QueryProvider>
+            <SessionProvider>
+              <SocketEventProvider>
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                  <MaintenanceGuard>
+                    <div className="flex flex-col min-h-screen">
+                      <div className="flex-1">{children}</div>
+                    </div>
+                  </MaintenanceGuard>
+                  <Toaster richColors closeButton position="top-right" />
+                </ThemeProvider>
+              </SocketEventProvider>
+            </SessionProvider>
+          </QueryProvider>
         </I18nProvider>
       </body>
     </html>
