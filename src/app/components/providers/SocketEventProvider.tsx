@@ -20,15 +20,23 @@ export const SocketEventProvider = ({ children }: { children: React.ReactNode })
 
     useEffect(() => {
         socket.connect();
+        let hasConnectedBefore = false;
 
         const onConnect = () => {
-            console.log('Socket conectado exitosamente');
-            
-            // Re-join logic after reconnecting
+            // Fresh counts on every (re)connection: user-count events sent
+            // while we were offline are lost, so the numbers went stale.
+            socket.emit('get-initial-room-state');
+
+            // Re-join only on a REconnection. On the first connection the chat
+            // page's own join (useJoinRoom) is already queued; joining here too
+            // sent join-room twice and the room counted the user double.
+            const isReconnect = hasConnectedBefore;
+            hasConnectedBefore = true;
+            if (!isReconnect) return;
+
             const lastRoom = sessionStorage.getItem('last_chat_room');
             const storedUsername = localStorage.getItem('username');
             if (lastRoom && storedUsername) {
-                console.log(`Re-uniéndose a sala ${lastRoom} tras reconexión...`);
                 socket.emit('join-room', lastRoom, storedUsername);
             }
         };
@@ -70,10 +78,10 @@ export const SocketEventProvider = ({ children }: { children: React.ReactNode })
         socket.on('connect_error', onConnectError);
         socket.on('reconnect_attempt', onReconnectAttempt);
         socket.on('reconnect_failed', onReconnectFailed);
-        
-        socket.emit('get-initial-room-state');
         socket.on('initial-room-state', handleInitialState);
         socket.on('user-count', handleUserCountUpdate);
+        // Already connected before the listener was attached: run it once now.
+        if (socket.connected) onConnect();
 
         return () => {
             socket.off('connect', onConnect);
