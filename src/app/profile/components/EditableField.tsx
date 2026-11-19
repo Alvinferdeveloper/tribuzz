@@ -6,10 +6,11 @@ import { useForm, Controller, FieldValues, Path } from 'react-hook-form';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Textarea } from '@/src/components/ui/textarea';
-import { Pencil, Save, X } from 'lucide-react';
-import { Label } from '@/src/components/ui/label';
+import { Check } from 'lucide-react';
+import { IconBubbleEdit } from '@/src/app/components/brand/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BubbleLoader } from "@/src/components/ui/bubble-loader";
+import { cn } from '@/src/lib/utils';
 
 interface EditableFieldProps<T extends FieldValues, Name extends Path<T> = Path<T>> {
     name: Name;
@@ -22,20 +23,56 @@ interface EditableFieldProps<T extends FieldValues, Name extends Path<T> = Path<
     inputClassName?: string;
     labelClassName?: string;
     readOnly?: boolean;
+    /** Shown in place of the value when it's empty and read-only. */
+    emptyText?: string;
+}
+
+/** Pencil button shared by the editable rows: always visible on touch, on hover elsewhere. */
+export function EditButton({ onClick, label }: { onClick: () => void; label: string }) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-label={label}
+            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[opacity,background-color,color,transform] duration-150 hover:bg-accent hover:text-foreground active:scale-95 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100"
+        >
+            <IconBubbleEdit className="size-[18px]" />
+        </button>
+    );
+}
+
+export function EditActions({ saving, onCancel, saveLabel }: { saving: boolean; onCancel: () => void; saveLabel?: string }) {
+    const { t } = useTranslation();
+    return (
+        <div className="mt-3 flex gap-2">
+            <Button type="submit" size="sm" disabled={saving}>
+                {saving ? <BubbleLoader size="sm" mono /> : <Check className="size-4" />}
+                {saveLabel ?? t('profile.editable.save')}
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
+                {t('profile.editable.cancel')}
+            </Button>
+        </div>
+    );
 }
 
 export function EditableField<T extends FieldValues, Name extends Path<T> = Path<T>>({
     name, label, value, updateFn, isTextarea = false,
     placeholder = '', maxLength, inputClassName = '', labelClassName = '',
-    readOnly = false,
+    readOnly = false, emptyText,
 }: EditableFieldProps<T, Name>) {
     const { t } = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    const { control, handleSubmit, formState: { errors } } = useForm({
+    const { control, handleSubmit, reset, watch } = useForm({
         defaultValues: { [name]: value }
     });
+
+    const startEditing = () => {
+        reset({ [name]: value });
+        setIsEditing(true);
+    };
 
     const onSave = async (data: FieldValues) => {
         setIsSaving(true);
@@ -44,90 +81,79 @@ export function EditableField<T extends FieldValues, Name extends Path<T> = Path
         setIsEditing(false);
     };
 
+    const draftLength = String(watch(name as string) ?? '').length;
+
     return (
-        <motion.div
-            layout
-            className={`group relative flex w-full items-start justify-between border-b border-border/40 py-5 transition-colors ${isEditing ? 'bg-primary/5 px-2 -mx-2 rounded-lg border-transparent' : ''}`}
-        >
-            <div className="w-full">
-                <Label className={`text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 ${labelClassName}`}>
-                    {label}
-                </Label>
+        <div className="group py-4 first:pt-0 last:pb-0">
+            <p className={cn("text-xs font-semibold uppercase tracking-wider text-muted-foreground", labelClassName)}>
+                {label}
+            </p>
 
-                <AnimatePresence mode="wait">
-                    {!isEditing ? (
-                        <motion.div
-                            key="view"
-                            initial={{ opacity: 0, y: -5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 5 }}
-                            className="flex items-center justify-between"
-                        >
-                            <p className={`mt-1.5 text-base leading-relaxed ${inputClassName}`}>
-                                {value || <span className="text-muted-foreground/50 italic">{t('profile.editable.not_set')}</span>}
-                            </p>
-                            {!readOnly && (
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={() => setIsEditing(true)}
-                                >
-                                    <Pencil className="h-4 w-4 text-muted-foreground" />
-                                </Button>
+            <AnimatePresence mode="wait" initial={false}>
+                {!isEditing ? (
+                    <motion.div
+                        key="view"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="mt-1 flex items-start justify-between gap-3"
+                    >
+                        <p className={cn("min-w-0 whitespace-pre-line break-words text-[15px] leading-relaxed", inputClassName)}>
+                            {value || (
+                                <span className="text-muted-foreground">
+                                    {readOnly ? (emptyText ?? t('profile.editable.not_set')) : placeholder || t('profile.editable.not_set')}
+                                </span>
                             )}
-                        </motion.div>
-                    ) : (
-                        <motion.form
-                            key="edit"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            onSubmit={handleSubmit(onSave)}
-                            className="mt-3 w-full overflow-hidden"
-                        >
-                            <Controller
-                                name={name}
-                                control={control}
-                                defaultValue={value as any}
-                                render={({ field }) => (
-                                    isTextarea ? (
-                                        <Textarea
-                                            {...field}
-                                            className={`min-h-[100px] resize-none focus-visible:ring-primary ${inputClassName}`}
-                                            placeholder={placeholder}
-                                            maxLength={maxLength}
-                                        />
-                                    ) : (
-                                        <Input
-                                            {...field}
-                                            className={`h-11 focus-visible:ring-primary ${inputClassName}`}
-                                            placeholder={placeholder}
-                                            autoFocus
-                                        />
-                                    )
-                                )}
-                            />
-                            {errors[name] && <p className="mt-1.5 text-xs font-medium text-destructive">{(errors[name] as any).message}</p>}
-
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mt-4 flex gap-2"
-                            >
-                                <Button type="submit" size="sm" className="rounded-full px-4" disabled={isSaving}>
-                                    {isSaving ? <BubbleLoader size="sm" mono className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
-                                    {t('profile.editable.save')}
-                                </Button>
-                                <Button type="button" size="sm" variant="ghost" className="rounded-full px-4" onClick={() => setIsEditing(false)}>
-                                    <X className="mr-2 h-4 w-4" />
-                                    {t('profile.editable.cancel')}
-                                </Button>
-                            </motion.div>
-                        </motion.form>
-                    )}
-                </AnimatePresence>
-            </div>
-        </motion.div>
+                        </p>
+                        {!readOnly && <EditButton onClick={startEditing} label={t('profile.editable.edit', { field: label })} />}
+                    </motion.div>
+                ) : (
+                    <motion.form
+                        key="edit"
+                        initial={{ opacity: 0, transform: 'translateY(4px)' }}
+                        animate={{ opacity: 1, transform: 'translateY(0px)' }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18 }}
+                        onSubmit={handleSubmit(onSave)}
+                        className="mt-2"
+                    >
+                        <Controller
+                            name={name}
+                            control={control}
+                            render={({ field }) => (
+                                isTextarea ? (
+                                    <Textarea
+                                        {...field}
+                                        value={field.value ?? ''}
+                                        aria-label={label}
+                                        className={cn("min-h-[100px] resize-none", inputClassName)}
+                                        placeholder={placeholder}
+                                        maxLength={maxLength}
+                                        autoFocus
+                                    />
+                                ) : (
+                                    <Input
+                                        {...field}
+                                        value={field.value ?? ''}
+                                        aria-label={label}
+                                        className={inputClassName}
+                                        placeholder={placeholder}
+                                        maxLength={maxLength}
+                                        autoFocus
+                                    />
+                                )
+                            )}
+                        />
+                        <div className="flex items-start justify-between gap-3">
+                            <EditActions saving={isSaving} onCancel={() => setIsEditing(false)} />
+                            {maxLength && (
+                                <span className="mt-4 text-xs tabular-nums text-muted-foreground">{draftLength}/{maxLength}</span>
+                            )}
+                        </div>
+                    </motion.form>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }

@@ -3,22 +3,25 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Control, FieldValues, Path } from 'react-hook-form';
-import { Button } from '@/src/components/ui/button';
-import { Badge } from '@/src/components/ui/badge';
-import { Pencil, Save, X } from 'lucide-react';
-import { Label } from '@/src/components/ui/label';
-import { Checkbox } from '@/src/components/ui/checkbox';
+import { Check, Plus } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Card, CardContent } from '@/src/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BubbleLoader } from "@/src/components/ui/bubble-loader";
+import { tribeTone } from '@/src/app/utils/tribeColor';
+import { EditActions, EditButton } from './EditableField';
+import { cn } from '@/src/lib/utils';
 
 function resolveIcon(iconName: string | null): LucideIcon | null {
     if (!iconName) return null;
     const key = iconName.charAt(0).toUpperCase() + iconName.slice(1) as keyof typeof LucideIcons;
     const icon = LucideIcons[key];
     return typeof icon === 'function' ? (icon as LucideIcon) : null;
+}
+
+function HobbyIcon({ icon, className }: { icon: string | null; className?: string }) {
+    const Icon = resolveIcon(icon);
+    if (Icon) return <Icon aria-hidden="true" className={className} />;
+    return icon ? <span aria-hidden="true">{icon}</span> : null;
 }
 
 interface Hobby {
@@ -36,17 +39,23 @@ interface EditableHobbiesProps<T extends FieldValues, Name extends Path<T> = Pat
     control: Control<T>;
     updateFn: (field: Name, value: any) => Promise<void>;
     readOnly?: boolean;
+    /** Shown when a read-only profile has no hobbies. */
+    emptyText?: string;
 }
 
+/**
+ * Hobbies as chips in the logo colors (each hobby always wears the same one).
+ * Editing turns the whole catalogue into toggles in place.
+ */
 export function EditableHobbies<T extends FieldValues, Name extends Path<T> = Path<T>>({
     name,
     label,
     userHobbies,
     allHobbies,
     hobbiesLoading,
-    control,
     updateFn,
     readOnly = false,
+    emptyText,
 }: EditableHobbiesProps<T, Name>) {
     const { t } = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
@@ -59,16 +68,12 @@ export function EditableHobbies<T extends FieldValues, Name extends Path<T> = Pa
         }
     }, [userHobbies, isEditing]);
 
-    const onSave = async () => {
+    const onSave = async (e: React.FormEvent) => {
+        e.preventDefault();
         setIsSaving(true);
         const hobbiesToSave = allHobbies.filter(hobby => selectedHobbyIds.includes(hobby.id));
         await updateFn(name, hobbiesToSave);
         setIsSaving(false);
-        setIsEditing(false);
-    };
-
-    const handleCancel = () => {
-        setSelectedHobbyIds(userHobbies?.map(h => h.id) || []);
         setIsEditing(false);
     };
 
@@ -79,104 +84,98 @@ export function EditableHobbies<T extends FieldValues, Name extends Path<T> = Pa
     };
 
     return (
-        <motion.div layout className="border-b border-border/50 py-4">
-            <div className="flex items-start justify-between mb-2">
-                <Label className="text-sm font-medium text-muted-foreground">{label}</Label>
-                {!isEditing && !readOnly && (
-                    <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
-                        <Pencil className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                )}
-            </div>
+        <div className="group">
+            {(label || (!isEditing && !readOnly)) && (
+                <div className="mb-3 flex items-center justify-between gap-3">
+                    {label && <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>}
+                    {!isEditing && !readOnly && (
+                        <span className="ml-auto"><EditButton onClick={() => setIsEditing(true)} label={t('profile.editable.edit', { field: t('profile.hobbies_title') })} /></span>
+                    )}
+                </div>
+            )}
 
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
                 {!isEditing ? (
                     <motion.div
                         key="view"
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="flex flex-wrap gap-2"
                     >
-                        <div className="flex flex-wrap gap-2 mt-1">
-                    {userHobbies && userHobbies.length > 0 ? (
-                        userHobbies.map((hobby) => {
-                            const IconComponent = resolveIcon(hobby.icon);
-                            return (
-                                <Badge key={hobby.id} variant="secondary" className="flex items-center gap-2 py-1 px-3">
-                                    {IconComponent ? <IconComponent className="h-4 w-4" /> : <span className="h-4 w-4 text-xs">{hobby.icon}</span>}
-                                    <span className="font-normal">{hobby.name}</span>
-                                </Badge>
-                            );
-                        })
-                    ) : (
-                        <span className="text-muted-foreground italic text-sm">{t('profile.editable.no_hobbies')}</span>
-                    )}
-                </div>
+                        {userHobbies && userHobbies.length > 0 ? (
+                            userHobbies.map((hobby) => {
+                                const tone = tribeTone(hobby.name);
+                                return (
+                                    <span key={hobby.id} className={cn("inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-sm font-semibold", tone.soft, tone.ink)}>
+                                        <HobbyIcon icon={hobby.icon} className="size-4" />
+                                        {hobby.name}
+                                    </span>
+                                );
+                            })
+                        ) : readOnly ? (
+                            <p className="text-sm text-muted-foreground">{emptyText ?? t('profile.editable.no_hobbies')}</p>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(true)}
+                                className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-dashed border-muted-foreground/40 px-3.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
+                            >
+                                <Plus className="size-4" />
+                                {t('profile.editable.add_hobbies')}
+                            </button>
+                        )}
                     </motion.div>
                 ) : (
-                    <motion.div
+                    <motion.form
                         key="edit"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
+                        initial={{ opacity: 0, transform: 'translateY(4px)' }}
+                        animate={{ opacity: 1, transform: 'translateY(0px)' }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18 }}
+                        onSubmit={onSave}
                     >
-                <Card className="mt-2 border-dashed">
-                    <CardContent className="p-4">
                         {hobbiesLoading ? (
-                            <div aria-hidden="true" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                {Array.from({ length: 8 }, (_, i) => (
-                                    <div key={i} className="flex h-[76px] flex-col items-center justify-center gap-2 rounded-lg border-2 border-border p-3">
-                                        <div className="size-6 animate-pulse rounded-md bg-muted" />
-                                        <div className="h-3 w-16 animate-pulse rounded-md bg-muted" />
-                                    </div>
+                            <div aria-hidden="true" className="flex flex-wrap gap-2">
+                                {[96, 72, 110, 84, 64, 100, 78, 90].map((w, i) => (
+                                    <div key={i} className="h-9 animate-pulse rounded-full bg-muted" style={{ width: w }} />
                                 ))}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                            <div role="group" aria-label={t('profile.hobbies_title')} className="flex flex-wrap gap-2">
                                 {allHobbies.map((hobby) => {
-                                    const IconComponent = resolveIcon(hobby.icon);
+                                    const selected = selectedHobbyIds.includes(hobby.id);
+                                    const tone = tribeTone(hobby.name);
                                     return (
-                                        <motion.div
+                                        <button
                                             key={hobby.id}
-                                            layout
-                                            className="flex flex-col items-center justify-center gap-2"
+                                            type="button"
+                                            aria-pressed={selected}
+                                            onClick={() => toggleHobby(hobby.id)}
+                                            className={cn(
+                                                "inline-flex h-9 cursor-pointer items-center gap-2 rounded-full px-3.5 text-sm font-semibold",
+                                                "transition-[background-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.97]",
+                                                selected
+                                                    ? cn(tone.soft, tone.ink, "ring-2", tone.ring)
+                                                    : "bg-card text-muted-foreground ring-1 ring-border hover:text-foreground hover:ring-muted-foreground/40"
+                                            )}
                                         >
-                                            <label
-                                                htmlFor={`hobby-${hobby.id}`}
-                                                className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 w-full h-full cursor-pointer transition-colors ${selectedHobbyIds.includes(hobby.id)
-                                                    ? 'border-primary bg-primary/10'
-                                                    : 'border-border bg-card hover:border-primary/50'
-                                                    }`}
-                                            >
-                                                {IconComponent ? <IconComponent className="h-6 w-6 mb-1" /> : <span className="h-6 w-6 mb-1 text-xs">{hobby.icon}</span>}
-                                                <span className="text-center text-sm">{hobby.name}</span>
-                                            </label>
-                                            <Checkbox
-                                                id={`hobby-${hobby.id}`}
-                                                className="hidden"
-                                                checked={selectedHobbyIds.includes(hobby.id)}
-                                                onCheckedChange={() => toggleHobby(hobby.id)}
-                                            />
-                                        </motion.div>
+                                            {selected ? <Check className="size-4" strokeWidth={2.5} /> : <HobbyIcon icon={hobby.icon} className="size-4" />}
+                                            {hobby.name}
+                                        </button>
                                     );
                                 })}
                             </div>
                         )}
-                        <div className="mt-4 flex gap-2">
-                            <Button type="button" size="sm" onClick={onSave} disabled={isSaving || hobbiesLoading}>
-                                {isSaving ? <BubbleLoader size="sm" mono className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
-                                {t('profile.editable.save_hobbies')}
-                            </Button>
-                            <Button type="button" size="sm" variant="outline" onClick={handleCancel}>
-                                <X className="mr-2 h-4 w-4" />
-                                {t('profile.editable.cancel')}
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-                    </motion.div>
+                        <EditActions
+                            saving={isSaving}
+                            onCancel={() => setIsEditing(false)}
+                            saveLabel={t('profile.editable.save_hobbies')}
+                        />
+                    </motion.form>
                 )}
             </AnimatePresence>
-        </motion.div>
+        </div>
     );
 }

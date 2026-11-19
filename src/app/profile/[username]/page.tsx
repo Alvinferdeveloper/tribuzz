@@ -17,14 +17,14 @@ export default function OtherProfilePage() {
     const router = useRouter();
 
     return (
-        <div className="min-h-screen bg-main-gradient pb-20">
-            <div className="container mx-auto max-w-5xl pt-16 px-4">
+        <div className="min-h-screen bg-background">
+            <div className="mx-auto max-w-[1100px] px-4 pt-4 sm:px-6 md:pt-8">
                 <Button
                     variant="ghost"
                     onClick={() => router.back()}
-                    className="mb-6 text-white hover:bg-white/10 cursor-pointer"
+                    className="-ml-2 mb-4 text-muted-foreground hover:text-foreground"
                 >
-                    <ArrowLeft className="mr-2 h-4 w-4" /> {t('profile.public.back')}
+                    <ArrowLeft className="size-4" /> {t('profile.public.back')}
                 </Button>
 
                 <Suspense fallback={<ProfileSkeleton />}>

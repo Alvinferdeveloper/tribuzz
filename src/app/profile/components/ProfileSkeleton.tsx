@@ -1,7 +1,6 @@
-import { Card, CardContent, CardHeader } from '@/src/components/ui/card';
-
-// Mirrors UserProfile's layout (header card with avatar, then a 2/3 + 1/3
-// grid of cards) so the real profile replaces it without shifting.
+// Mirrors UserProfile's layout (banner hero with avatar, then a main column
+// and a 340px side column of cards) so the real profile replaces it without
+// shifting.
 
 function Bar({ className }: { className: string }) {
     return <div className={`animate-pulse rounded-md bg-muted ${className}`} />;
@@ -9,47 +8,52 @@ function Bar({ className }: { className: string }) {
 
 function SectionCard({ rows }: { rows: number }) {
     return (
-        <Card className="border-border/40 bg-card shadow-lg">
-            <div className="h-1 w-full bg-muted" />
-            <CardHeader className="space-y-2">
-                <Bar className="h-5 w-40" />
-                <Bar className="h-3.5 w-64 max-w-full" />
-            </CardHeader>
-            <CardContent className="space-y-5">
+        <div className="rounded-[10px] bg-card p-5 shadow-[var(--card-shadow)] ring-1 ring-border/70 sm:p-6">
+            <div className="mb-5 flex items-start gap-3">
+                <div className="size-9 shrink-0 animate-pulse rounded-[9px] bg-muted" />
+                <div className="flex-1 space-y-2">
+                    <Bar className="h-4 w-36" />
+                    <Bar className="h-3.5 w-56 max-w-full" />
+                </div>
+            </div>
+            <div className="space-y-5">
                 {Array.from({ length: rows }, (_, i) => (
                     <div key={i} className="space-y-2">
-                        <Bar className="h-3 w-24" />
-                        <Bar className="h-5 w-full" />
+                        <Bar className="h-3 w-20" />
+                        <Bar className="h-4 w-full" />
                     </div>
                 ))}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 
 export function ProfileSkeleton() {
     return (
-        <div aria-hidden="true" className="mx-auto pb-12">
-            <Card className="relative mb-8 overflow-hidden border-border/40 bg-card shadow-xl">
-                <CardHeader className="p-8">
-                    <div className="flex flex-col items-center gap-8 md:flex-row">
-                        <div className="h-36 w-36 shrink-0 animate-pulse rounded-full border-4 border-background bg-muted" />
-                        <div className="flex w-full flex-1 flex-col items-center gap-3 md:items-start">
-                            <Bar className="h-10 w-56 max-w-full" />
-                            <Bar className="h-4 w-44" />
+        <div aria-hidden="true" className="pb-12">
+            <div className="overflow-hidden rounded-[10px] bg-card shadow-[var(--card-shadow)] ring-1 ring-border/70">
+                <div className="h-32 animate-pulse bg-muted md:h-44" />
+                <div className="px-5 pb-6 sm:px-8">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+                        <div className="-mt-12 size-28 shrink-0 rounded-full bg-card ring-4 ring-card sm:-mt-14 sm:size-32">
+                            <div className="size-full animate-pulse rounded-full bg-muted" />
+                        </div>
+                        <div className="flex-1 space-y-3 sm:pt-4">
+                            <Bar className="h-8 w-48" />
+                            <Bar className="h-4 w-64 max-w-full" />
                         </div>
                     </div>
-                </CardHeader>
-            </Card>
+                </div>
+            </div>
 
-            <div className="mt-6 grid gap-6 md:grid-cols-3">
-                <div className="space-y-6 md:col-span-2">
+            <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+                <div className="space-y-6">
                     <SectionCard rows={2} />
                     <SectionCard rows={1} />
                 </div>
-                <div className="space-y-6 md:col-span-1">
-                    <SectionCard rows={1} />
+                <div className="space-y-6">
                     <SectionCard rows={2} />
+                    <SectionCard rows={1} />
                 </div>
             </div>
         </div>

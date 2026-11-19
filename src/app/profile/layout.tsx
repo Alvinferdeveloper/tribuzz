@@ -1,4 +1,5 @@
-import GlobalLayout from "@/src/app/components/layout/GlobalLayout"
+import { TribesShell } from "@/src/app/components/layout/TribesShell";
+import { AppSurface } from "@/src/app/components/layout/AppSurface";
 import { Metadata } from "next";
 import { APP_NAME } from "@/src/app/constants";
 
@@ -12,5 +13,11 @@ export const metadata: Metadata = {
 };
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
-    return <GlobalLayout children={children} />
+    // Same app frame as /tribus (rail, mobile tab bar, brand surface): the
+    // profile is one of the tab bar's destinations, not a separate site.
+    return (
+        <AppSurface className="bg-background text-foreground">
+            <TribesShell>{children}</TribesShell>
+        </AppSurface>
+    );
 }
