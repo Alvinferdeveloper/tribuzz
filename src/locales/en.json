@@ -800,6 +800,8 @@
     "layout.rail.home": "Tribuzz home",
     "layout.rail.favorites": "Your favorites",
     "layout.rail.online": "{{count}} online",
+    "layout.rail.guest_slots": "Sign in and your favorite tribes will show up here",
+    "layout.rail.sign_in": "Sign in",
     "layout.rail.more": "More: help and legal",
     "auth_prompt.create.title": "Start your own tribe",
     "auth_prompt.create.description": "With a free account you can found a tribe around what you love and bring your people together.",

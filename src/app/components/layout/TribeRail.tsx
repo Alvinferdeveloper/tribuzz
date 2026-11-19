@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Tooltip } from 'radix-ui';
-import { Compass, LayoutGrid, Plus, Heart } from 'lucide-react';
+import { Compass, LayoutGrid, Plus, Heart, LogIn } from 'lucide-react';
 import { useTranslation } from '@/src/app/lib/i18n';
 import { useAuth } from '@/src/app/hooks/useAuth';
 import useRoom from '@/src/app/tribus/hooks/useRoom';
@@ -72,13 +72,8 @@ export function TribeRail({ currentRoom }: { currentRoom?: CurrentRoom } = {}) {
 
                 {isLoggedIn ? (
                     <FavoriteTribes pathname={pathname} currentRoom={currentRoom} />
-                ) : currentRoom && (
-                    <>
-                        <RailDivider />
-                        <RailItem href={`/chat/${currentRoom.id}`} label={currentRoom.name} active>
-                            <TribeBubble name={currentRoom.name} icon={currentRoom.server_icon} online={0} active />
-                        </RailItem>
-                    </>
+                ) : (
+                    <GuestFavorites currentRoom={currentRoom} />
                 )}
 
                 <RailItem
@@ -170,6 +165,61 @@ function FavoriteTribes({ pathname, currentRoom }: { pathname: string; currentRo
                     );
                 })}
             </ul>
+        </>
+    );
+}
+
+// Tail corners of the logo's bubbles, so the empty slots read as tribes-to-be.
+const GHOST_TAILS = ["rounded-bl-[5px]", "rounded-br-[5px]", "rounded-tl-[5px]"] as const;
+
+/**
+ * What guests see where favorites would be: the Favorites entry (it opens
+ * the sign-in prompt, like on the mobile tab bar), empty dashed tribe slots
+ * that show where their tribes will live, and a clear "Sign in" bubble.
+ * Without it the rail looked complete, as if there were nothing to sign in for.
+ */
+function GuestFavorites({ currentRoom }: { currentRoom?: CurrentRoom }) {
+    const { t } = useTranslation();
+    const { guard } = useAuthPrompt();
+
+    return (
+        <>
+            <RailItem href="/tribus/favorites" label={t('layout.profile_dropdown.favorites')} caption onClick={guard('favorites')}>
+                <IconBubble><Heart className="size-5" /></IconBubble>
+            </RailItem>
+
+            <RailDivider />
+
+            {currentRoom && (
+                <RailItem href={`/chat/${currentRoom.id}`} label={currentRoom.name} active>
+                    <TribeBubble name={currentRoom.name} icon={currentRoom.server_icon} online={0} active />
+                </RailItem>
+            )}
+
+            <RailItem href="/login" label={t('layout.rail.guest_slots')}>
+                <span className="flex flex-col items-center gap-2">
+                    {GHOST_TAILS.map((tail, i) => (
+                        <span
+                            key={tail}
+                            className={cn(
+                                "size-10 rounded-[15px] border-2 border-dashed border-muted-foreground/30 transition-colors duration-200 group-hover:border-primary/55",
+                                tail
+                            )}
+                            // Fades downward: a hint, not a wall of boxes.
+                            style={{ opacity: 1 - i * 0.28 }}
+                        />
+                    ))}
+                </span>
+            </RailItem>
+
+            <RailItem href="/login" label={t('layout.rail.sign_in')} caption>
+                <span className={cn(
+                    "flex size-12 items-center justify-center rounded-[18px] rounded-bl-[5px] bg-primary text-primary-foreground shadow-[var(--btn-primary-shadow)]",
+                    BUBBLE_MOTION, BUBBLE_FOCUS
+                )}>
+                    <LogIn className="size-5" />
+                </span>
+            </RailItem>
         </>
     );
 }

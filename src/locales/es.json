@@ -800,6 +800,8 @@
     "layout.rail.home": "Inicio de Tribuzz",
     "layout.rail.favorites": "Tus favoritas",
     "layout.rail.online": "{{count}} en línea",
+    "layout.rail.guest_slots": "Inicia sesión y tus tribus favoritas aparecerán aquí",
+    "layout.rail.sign_in": "Entrar",
     "layout.rail.more": "Más: ayuda y legal",
     "auth_prompt.create.title": "Crea tu propia tribu",
     "auth_prompt.create.description": "Con una cuenta gratis puedes fundar una tribu sobre lo que te apasiona y reunir a tu gente.",
