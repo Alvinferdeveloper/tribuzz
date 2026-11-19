@@ -118,10 +118,15 @@ export function useMyRooms(statusFilter: RoomStatus | 'ALL' = 'ALL') {
         }
     };
 
+    // Clearing the error re-arms loading: the page-1 effect or the
+    // infinite-scroll sentinel picks it up again.
+    const retry = useCallback(() => setError(null), []);
+
     return {
         rooms,
         loading,
         error,
+        retry,
         hasMore,
         loadMoreRooms,
         deleteRoom,

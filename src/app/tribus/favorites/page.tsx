@@ -3,16 +3,18 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Heart, TriangleAlert } from 'lucide-react';
 import useRoom from '@/src/app/tribus/hooks/useRoom';
 import { AuthGuard } from "@/src/app/components/auth/AuthGuard";
-import { ArrowLeft } from 'lucide-react';
 import { useInfiniteScroll } from '@/src/app/hooks/useInfiniteScroll';
-import { RoomCard } from '@/src/app/tribus/components/RoomCard';
+import { RoomCard, roomCardVariants } from '@/src/app/tribus/components/RoomCard';
+import { RoomSkeleton } from '@/src/app/tribus/components/RoomSkeleton';
 import { useRoomUserCounts } from '@/src/app/tribus/hooks/useRoomUserCounts';
 import { SearchBar } from '@/src/app/tribus/components/SearchBar';
+import { TribePageHeader } from '@/src/app/tribus/components/TribePageHeader';
 import { useDebounce } from '@/src/app/hooks/useDebounce';
+import { Buddy } from '@/src/app/components/brand/Buddy';
 import { Button } from '@/src/components/ui/button';
-import Link from 'next/link';
 import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 export default function FavoritesPage() {
@@ -22,7 +24,7 @@ export default function FavoritesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const debouncedSearch = useDebounce(searchQuery, 500);
 
-    const { rooms, error, loading, hasMore, loadMoreRooms } = useRoom(debouncedSearch, 'favorites');
+    const { rooms, error, loading, hasMore, loadMoreRooms, retry } = useRoom(debouncedSearch, 'favorites');
 
     const { sentinelRef } = useInfiniteScroll({ loading, hasMore, onLoadMore: loadMoreRooms });
     const { userCounts } = useRoomUserCounts();
@@ -32,57 +34,128 @@ export default function FavoritesPage() {
         router.push(`/chat/${roomId}`);
     };
 
+    const showInitialSkeleton = loading && rooms.length === 0;
+    const showEmpty = !loading && !error && rooms.length === 0;
+    // With no favorites at all, a search field has nothing to search.
+    const hasNoFavorites = showEmpty && !debouncedSearch;
+
     return (
         <AuthGuard>
             <div className="min-h-screen bg-background">
-                <div className="max-w-7xl mx-auto p-6 space-y-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="space-y-1">
-                            <Link href="/tribus" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2">
-                                <ArrowLeft className="h-4 w-4" />
-                                {t('rooms.favorites.back')}
-                            </Link>
-                            <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('rooms.favorites.title')}</h1>
-                            <p className="text-muted-foreground">{t('rooms.favorites.subtitle')}</p>
-                        </div>
-
+                <TribePageHeader
+                    kicker={t('rooms.favorites.kicker')}
+                    title={t('rooms.favorites.title')}
+                    subtitle={t('rooms.favorites.subtitle')}
+                    glow="coral"
+                    illustration={<FavoritesIllustration />}
+                >
+                    {!hasNoFavorites && (
                         <SearchBar
                             value={searchQuery}
                             onChange={setSearchQuery}
                             placeholder={t('rooms.favorites.search_placeholder')}
                         />
-                    </div>
+                    )}
+                </TribePageHeader>
 
-                    <main className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                        {rooms.length === 0 && !loading && !error && (
-                            <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
-                                <p className="text-muted-foreground text-lg mb-4">{t('rooms.favorites.empty')}</p>
-                                <Button onClick={() => router.push('/tribus')}>
-                                    {t('rooms.favorites.browse')}
-                                </Button>
+                <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
+                    {error && rooms.length === 0 ? (
+                        <div className="flex flex-col items-center px-4 py-20 text-center">
+                            <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+                                <TriangleAlert className="size-6" />
                             </div>
-                        )}
-                        {rooms.map((room, index) => (
-                            <RoomCard
-                                key={room.id}
-                                room={room}
-                                index={index}
-                                userCount={userCounts[room.id] || 0}
-                                isConnecting={connecting === room.id}
-                                onJoin={handleJoinRoom}
-                            />
-                        ))}
-                    </main>
+                            <h2 className="text-lg font-semibold">{t('rooms.error.title')}</h2>
+                            <p className="mt-1 mb-6 max-w-md text-sm text-muted-foreground">{error}</p>
+                            <Button onClick={retry}>{t('rooms.error.retry')}</Button>
+                        </div>
+                    ) : hasNoFavorites ? (
+                        <EmptyFavorites onBrowse={() => router.push('/tribus')} />
+                    ) : (
+                        <>
+                            <main className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+                                {showInitialSkeleton
+                                    ? [...Array(4)].map((_, i) => <RoomSkeleton key={i} />)
+                                    : rooms.map((room, index) => (
+                                        <RoomCard
+                                            key={room.id}
+                                            room={room}
+                                            index={index}
+                                            userCount={userCounts[room.id] || 0}
+                                            isConnecting={connecting === room.id}
+                                            onJoin={handleJoinRoom}
+                                            cardVariants={roomCardVariants}
+                                        />
+                                    ))}
+                            </main>
 
-                    <div ref={sentinelRef} className="flex justify-center items-center h-20">
-                        {loading && <BubbleLoader size="md" />}
-                        {!loading && !hasMore && rooms.length > 0 && (
-                            <p className="text-muted-foreground">{t('rooms.favorites.end')}</p>
-                        )}
-                        {error && <p className="text-destructive">{error}</p>}
-                    </div>
+                            {showEmpty && (
+                                <div className="flex flex-col items-center px-4 py-16 text-center">
+                                    <p className="max-w-sm text-sm text-muted-foreground">
+                                        {t('rooms.favorites.empty_search', { query: searchQuery })}
+                                    </p>
+                                    <Button variant="outline" className="mt-5" onClick={() => setSearchQuery('')}>
+                                        {t('rooms.favorites.clear_search')}
+                                    </Button>
+                                </div>
+                            )}
+
+                            {error && rooms.length > 0 && (
+                                <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl bg-destructive/5 p-6 text-center">
+                                    <p className="text-sm font-medium text-destructive">{error}</p>
+                                    <Button variant="outline" size="sm" onClick={retry}>
+                                        {t('rooms.load_more.retry')}
+                                    </Button>
+                                </div>
+                            )}
+
+                            <div ref={sentinelRef} className="flex h-24 items-center justify-center">
+                                {loading && rooms.length > 0 && (
+                                    <BubbleLoader size="md" label={t('rooms.load_more.loading')} />
+                                )}
+                                {!loading && !hasMore && rooms.length > 0 && (
+                                    <p className="text-sm text-muted-foreground">{t('rooms.favorites.end')}</p>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </AuthGuard>
+    );
+}
+
+/** Three Buddies, the middle one in love with a tribe: hearts float up from it. */
+function FavoritesIllustration() {
+    return (
+        <div className="relative h-[150px] w-[230px]">
+            <Heart className="brand-anim brand-float absolute left-[104px] top-0 size-9 fill-tribe-coral text-tribe-coral" />
+            <Heart className="brand-anim brand-float absolute left-[78px] top-[30px] size-4 fill-tribe-coral/70 text-transparent [animation-delay:0.8s]" />
+            <Heart className="brand-anim brand-float absolute left-[150px] top-[22px] size-5 fill-tribe-sun text-transparent [animation-delay:1.4s]" />
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-center gap-2">
+                <Buddy name="fav-violet" tone="violet" size={58} delay={0.3} />
+                <Buddy name="fav-teal" tone="teal" size={84} />
+                <Buddy name="fav-sun" tone="sun" size={52} delay={0.6} />
+            </div>
+        </div>
+    );
+}
+
+/** A Buddy "saying" an empty heart: favorites start on a tribe card's heart. */
+function EmptyFavorites({ onBrowse }: { onBrowse: () => void }) {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-col items-center px-4 pt-10 pb-20 text-center">
+            <div aria-hidden="true" className="relative mb-6 h-[120px] w-[150px]">
+                <div className="absolute right-0 top-0 flex size-[60px] items-center justify-center rounded-[22px] rounded-bl-[6px] border-2 border-dashed border-tribe-coral/60 bg-card">
+                    <Heart className="size-6 text-tribe-coral" />
+                </div>
+                <Buddy name="empty-fav" tone="coral" size={80} className="absolute bottom-0 left-2" />
+            </div>
+            <h2 className="text-xl font-bold tracking-tight">{t('rooms.favorites.empty_title')}</h2>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                {t('rooms.favorites.empty_desc')}
+            </p>
+            <Button className="mt-6" onClick={onBrowse}>{t('rooms.favorites.browse')}</Button>
+        </div>
     );
 }

@@ -2,6 +2,8 @@
 
 import { Search, X } from 'lucide-react';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { cn } from '@/src/lib/utils';
 
 interface SearchBarProps {
     value: string;
@@ -10,43 +12,40 @@ interface SearchBarProps {
     className?: string;
 }
 
-export function SearchBar({ value, onChange, placeholder = "Buscar...", className = "" }: SearchBarProps) {
+/** Compact version of the explore hero's search field: a solid card pill. */
+export function SearchBar({ value, onChange, placeholder, className }: SearchBarProps) {
+    const { t } = useTranslation();
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const handleClear = () => {
-        onChange('');
-        inputRef.current?.focus();
-    };
-
     return (
-        <div className={`relative w-full max-w-2xl group ${className}`}>
-            {/* Magnifying glass icon that changes color when the input is focused */}
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Search className="h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
-            </div>
-
+        <label
+            className={cn(
+                'group flex h-12 w-full max-w-xl items-center gap-3 rounded-2xl bg-card px-4 text-card-foreground',
+                'shadow-[0_8px_24px_-14px_var(--shadow-tint)] ring-1 ring-border transition-shadow duration-200',
+                'focus-within:ring-2 focus-within:ring-primary/60',
+                className
+            )}
+        >
+            <Search className="size-[18px] shrink-0 text-muted-foreground transition-colors group-focus-within:text-primary" />
+            <span className="sr-only">{placeholder ?? t('rooms.search.placeholder')}</span>
             <input
                 ref={inputRef}
-                type="text"
-                className="flex h-10 w-full rounded-full border border-input bg-background pl-10 pr-10 py-2 text-sm shadow-sm transition-all duration-200 
-                placeholder:text-muted-foreground 
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary
-                disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder={placeholder}
+                type="search"
+                className="h-full w-full bg-transparent text-[15px] outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
+                placeholder={placeholder ?? t('rooms.search.placeholder')}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
             />
-
-            {/* Clear button that appears when there is text */}
             {value && (
                 <button
-                    onClick={handleClear}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="Borrar búsqueda"
+                    type="button"
+                    onClick={() => { onChange(''); inputRef.current?.focus(); }}
+                    className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[background-color,color,transform] duration-150 hover:bg-accent hover:text-foreground active:scale-95"
+                    aria-label={t('rooms.search.clear')}
                 >
-                    <X className="h-4 w-4" />
+                    <X className="size-4" />
                 </button>
             )}
-        </div>
+        </label>
     );
 }

@@ -3,11 +3,23 @@
 import { useState } from 'react';
 import { z } from 'zod';
 
-// Zod Schema for form validation
+// Same limits the API enforces (name is a bit stricter so it fits on a card).
+export const ROOM_LIMITS = {
+    name: { min: 3, max: 45 },
+    short_description: { min: 10, max: 45 },
+    full_description: { min: 20, max: 300 },
+} as const;
+
 export const RoomSchema = z.object({
-    name: z.string().min(3, "El nombre debe tener al menos 3 caracteres.").max(45, "El nombre no puede exceder los 45 caracteres."),
-    short_description: z.string().min(10, "La descripción corta debe tener al menos 10 caracteres.").max(45, "La descripción corta no puede exceder los 100 caracteres."),
-    full_description: z.string().min(20, "La descripción completa debe tener al menos 20 caracteres.").max(300, "La descripción completa no puede exceder los 500 caracteres."),
+    name: z.string()
+        .min(ROOM_LIMITS.name.min, `El nombre debe tener al menos ${ROOM_LIMITS.name.min} caracteres.`)
+        .max(ROOM_LIMITS.name.max, `El nombre no puede exceder los ${ROOM_LIMITS.name.max} caracteres.`),
+    short_description: z.string()
+        .min(ROOM_LIMITS.short_description.min, `La descripción corta debe tener al menos ${ROOM_LIMITS.short_description.min} caracteres.`)
+        .max(ROOM_LIMITS.short_description.max, `La descripción corta no puede exceder los ${ROOM_LIMITS.short_description.max} caracteres.`),
+    full_description: z.string()
+        .min(ROOM_LIMITS.full_description.min, `La descripción completa debe tener al menos ${ROOM_LIMITS.full_description.min} caracteres.`)
+        .max(ROOM_LIMITS.full_description.max, `La descripción completa no puede exceder los ${ROOM_LIMITS.full_description.max} caracteres.`),
     categoryIds: z.array(z.string()).max(3, "Máximo 3 categorías").optional(),
 });
 

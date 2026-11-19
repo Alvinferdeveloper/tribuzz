@@ -1,19 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCreateRoom, RoomSchema, RoomFormValues } from '../hooks/useCreateRoom';
+import { useCreateRoom, RoomSchema, RoomFormValues, ROOM_LIMITS } from '../hooks/useCreateRoom';
 import { useCategories } from '../hooks/useCategories';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Textarea } from '@/src/components/ui/textarea';
 import { Label } from '@/src/components/ui/label';
 import { CategorySelector } from './CategorySelector';
-import { Type, FileText, AlignLeft, Rocket } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/src/components/ui/card';
+import type { TribeDraft } from './TribePreview';
+import { ArrowRight, CircleAlert } from 'lucide-react';
 import { BubbleLoader } from "@/src/components/ui/bubble-loader";
+import { cn } from '@/src/lib/utils';
 
 export interface RoomData {
     id: string;
@@ -21,10 +22,12 @@ export interface RoomData {
 }
 
 interface CreateRoomFormProps {
-    onRoomCreated: (room: RoomData) => void;
+    onRoomCreated: (room: RoomData, draft: TribeDraft) => void;
+    /** Live draft for the preview panel beside the form. */
+    onDraftChange: (draft: TribeDraft) => void;
 }
 
-export function CreateRoomForm({ onRoomCreated }: CreateRoomFormProps) {
+export function CreateRoomForm({ onRoomCreated, onDraftChange }: CreateRoomFormProps) {
     const { t } = useTranslation();
     const { createRoom, loading, error } = useCreateRoom();
     const { categories, loading: categoriesLoading } = useCategories();
@@ -34,109 +37,155 @@ export function CreateRoomForm({ onRoomCreated }: CreateRoomFormProps) {
         register,
         handleSubmit,
         setValue,
+        watch,
         formState: { errors },
     } = useForm<RoomFormValues>({
         resolver: zodResolver(RoomSchema),
+        defaultValues: { name: '', short_description: '', full_description: '' },
     });
 
     useEffect(() => {
         setValue('categoryIds', selectedCategories);
     }, [selectedCategories, setValue]);
 
+    const name = watch('name') ?? '';
+    const shortDescription = watch('short_description') ?? '';
+    const fullDescription = watch('full_description') ?? '';
+
+    const selectedKey = selectedCategories.join(',');
+    const draft: TribeDraft = useMemo(() => ({
+        name,
+        // The explore card shows the long description, so preview that one.
+        description: fullDescription || shortDescription,
+        categories: categories.filter(c => selectedCategories.includes(c.id)),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }), [name, fullDescription, shortDescription, categories, selectedKey]);
+
+    useEffect(() => {
+        onDraftChange(draft);
+    }, [draft, onDraftChange]);
+
     const onSubmit = async (data: RoomFormValues) => {
         const newRoom = await createRoom(data);
-        if (newRoom) {
-            onRoomCreated(newRoom);
-        }
+        if (newRoom) onRoomCreated(newRoom, draft);
     };
 
     return (
-        <Card className="max-w-xl mx-auto border-border/50 shadow-xl bg-card/50 backdrop-blur-xl">
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <CardHeader>
-                    <CardTitle className="text-xl">{t('rooms.create.form.basic_info')}</CardTitle>
-                    <CardDescription>
-                        {t('rooms.create.form.basic_info_desc')}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5 pb-5">
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="rounded-[var(--card-radius)] bg-card p-5 shadow-[var(--card-shadow)] ring-1 ring-border/70 sm:p-7">
+                <h2 className="text-lg font-bold tracking-tight">{t('rooms.create.form.basic_info')}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{t('rooms.create.form.basic_info_desc')}</p>
 
-                    {/* Name */}
-                    <div className="space-y-2">
-                        <Label htmlFor="name" className="text-sm font-medium">{t('rooms.create.form.name_label')}</Label>
-                        <div className="relative">
-                            <Type className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                id="name"
-                                {...register('name')}
-                                className="pl-9 bg-background/50 focus:bg-background transition-all"
-                                placeholder={t('rooms.create.form.name_placeholder')}
-                            />
-                        </div>
-                        {errors.name && <p className="text-sm text-destructive font-medium animate-pulse">{errors.name.message}</p>}
-                    </div>
+                <div className="mt-6 space-y-5">
+                    <Field
+                        id="name"
+                        label={t('rooms.create.form.name_label')}
+                        count={name.length}
+                        max={ROOM_LIMITS.name.max}
+                        error={errors.name?.message}
+                    >
+                        <Input
+                            id="name"
+                            {...register('name')}
+                            maxLength={ROOM_LIMITS.name.max}
+                            aria-invalid={!!errors.name}
+                            placeholder={t('rooms.create.form.name_placeholder')}
+                        />
+                    </Field>
 
-                    {/* Short Description */}
-                    <div className="space-y-2">
-                        <Label htmlFor="short_description" className="text-sm font-medium">{t('rooms.create.form.short_desc_label')}</Label>
-                        <div className="relative">
-                            <FileText className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                id="short_description"
-                                {...register('short_description')}
-                                className="pl-9 bg-background/50 focus:bg-background transition-all"
-                                placeholder={t('rooms.create.form.short_desc_placeholder')}
-                            />
-                        </div>
-                        {errors.short_description && <p className="text-sm text-destructive font-medium animate-pulse">{errors.short_description.message}</p>}
-                    </div>
+                    <Field
+                        id="short_description"
+                        label={t('rooms.create.form.short_desc_label')}
+                        count={shortDescription.length}
+                        max={ROOM_LIMITS.short_description.max}
+                        error={errors.short_description?.message}
+                    >
+                        <Input
+                            id="short_description"
+                            {...register('short_description')}
+                            maxLength={ROOM_LIMITS.short_description.max}
+                            aria-invalid={!!errors.short_description}
+                            placeholder={t('rooms.create.form.short_desc_placeholder')}
+                        />
+                    </Field>
 
-                    {/* Full Description */}
-                    <div className="space-y-2">
-                        <Label htmlFor="full_description" className="text-sm font-medium">{t('rooms.create.form.full_desc_label')}</Label>
-                        <div className="relative">
-                            <AlignLeft className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Textarea
-                                id="full_description"
-                                {...register('full_description')}
-                                className="pl-9 min-h-[120px] bg-background/50 focus:bg-background transition-all resize-none"
-                                placeholder={t('rooms.create.form.full_desc_placeholder')}
-                            />
-                        </div>
-                        {errors.full_description && <p className="text-sm text-destructive font-medium animate-pulse">{errors.full_description.message}</p>}
-                    </div>
+                    <Field
+                        id="full_description"
+                        label={t('rooms.create.form.full_desc_label')}
+                        count={fullDescription.length}
+                        max={ROOM_LIMITS.full_description.max}
+                        error={errors.full_description?.message}
+                    >
+                        <Textarea
+                            id="full_description"
+                            {...register('full_description')}
+                            maxLength={ROOM_LIMITS.full_description.max}
+                            aria-invalid={!!errors.full_description}
+                            className="min-h-[120px] resize-none"
+                            placeholder={t('rooms.create.form.full_desc_placeholder')}
+                        />
+                    </Field>
 
-                    {/* Categories */}
                     <CategorySelector
                         categories={categories}
                         selectedIds={selectedCategories}
                         onChange={setSelectedCategories}
                         loading={categoriesLoading}
                     />
-                    {errors.categoryIds && <p className="text-sm text-destructive font-medium animate-pulse">{errors.categoryIds.message}</p>}
-                </CardContent>
+                    {errors.categoryIds && <FieldError message={errors.categoryIds.message} />}
+                </div>
 
-                <CardFooter className="flex flex-col gap-4 bg-secondary/10 pt-6 border-t border-border/50">
-                    {error && (
-                        <div className="w-full p-3 text-sm text-destructive bg-destructive/10 rounded-md text-center border border-destructive/20">
-                            {error}
-                        </div>
+                {error && (
+                    <div role="alert" className="mt-6 flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                        <CircleAlert className="mt-0.5 size-4 shrink-0" />
+                        {t(error, { defaultValue: t('rooms.create.form.error') })}
+                    </div>
+                )}
+
+                <Button type="submit" disabled={loading} size="lg" className="mt-7 h-12 w-full text-base">
+                    {loading ? (
+                        <>
+                            <BubbleLoader size="sm" mono />
+                            {t('rooms.create.form.creating')}
+                        </>
+                    ) : (
+                        <>
+                            {t('rooms.create.form.continue')}
+                            <ArrowRight className="size-4" />
+                        </>
                     )}
-                    <Button type="submit" disabled={loading} className="w-full cursor-pointer h-11 text-base shadow-lg shadow-primary/20">
-                        {loading ? (
-                            <>
-                                <BubbleLoader size="sm" mono className="mr-2" />
-                                {t('rooms.create.form.creating')}
-                            </>
-                        ) : (
-                            <>
-                                <Rocket className="mr-2 h-4 w-4" />
-                                {t('rooms.create.form.continue')}
-                            </>
-                        )}
-                    </Button>
-                </CardFooter>
+                </Button>
             </form>
-        </Card>
+    );
+}
+
+function Field({ id, label, count, max, error, children }: {
+    id: string;
+    label: string;
+    count: number;
+    max: number;
+    error?: string;
+    children: React.ReactNode;
+}) {
+    const nearLimit = count > max * 0.85;
+    return (
+        <div className="space-y-2">
+            <div className="flex items-baseline justify-between gap-3">
+                <Label htmlFor={id} className="text-sm font-semibold">{label}</Label>
+                <span className={cn("text-xs tabular-nums text-muted-foreground transition-colors", nearLimit && "text-tribe-coral-ink")}>
+                    {count}/{max}
+                </span>
+            </div>
+            {children}
+            {error && <FieldError message={error} />}
+        </div>
+    );
+}
+
+function FieldError({ message }: { message?: string }) {
+    return (
+        <p className="flex items-center gap-1.5 text-sm font-medium text-destructive">
+            <CircleAlert className="size-3.5 shrink-0" />
+            {message}
+        </p>
     );
 }

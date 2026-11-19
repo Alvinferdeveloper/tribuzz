@@ -35,7 +35,8 @@ export function useCategorySearch() {
             }
 
             const result = await response.json();
-            setCategories(result);
+            // The API wraps the list ({ data: [...] }), like useCategories expects.
+            setCategories(Array.isArray(result) ? result : result.data ?? []);
         } catch (err: any) {
             setError(err.message);
         } finally {

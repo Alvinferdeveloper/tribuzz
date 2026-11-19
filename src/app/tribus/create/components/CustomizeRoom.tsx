@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCreateRoom } from '../hooks/useCreateRoom';
 import { Button } from '@/src/components/ui/button';
-import { Upload, Image as ImageIcon, CheckCircle2, Eye, ArrowRight, CheckCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/src/components/ui/card';
+import { ImagePlus, Check, ArrowRight, CircleAlert, RefreshCw } from 'lucide-react';
 import SuccessDialog from '@/src/app/tribus/create/components/SuccessDialog';
+import { tribeTone } from '@/src/app/utils/tribeColor';
 import { cn } from '@/src/lib/utils';
 import { useRouter } from 'next/navigation';
 import { BubbleLoader } from "@/src/components/ui/bubble-loader";
@@ -14,24 +14,29 @@ import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 interface RoomData {
     id: string;
     name: string;
-    short_description?: string;
 }
 
 interface CustomizeRoomProps {
     room: RoomData;
+    /** Chosen images (object URLs) for the preview panel beside the form. */
+    onImagesChange: (images: { bannerUrl?: string; iconUrl?: string }) => void;
 }
 
-export function CustomizeRoom({ room }: CustomizeRoomProps) {
+export function CustomizeRoom({ room, onImagesChange }: CustomizeRoomProps) {
     const { t } = useTranslation();
     const { uploadRoomImage, uploading, uploadError } = useCreateRoom();
     const router = useRouter();
+    const tone = tribeTone(room.name);
 
-    // Local state for files and previews
     const [bannerFile, setBannerFile] = useState<File | null>(null);
     const [iconFile, setIconFile] = useState<File | null>(null);
     const [bannerPreview, setBannerPreview] = useState<string | null>(null);
     const [iconPreview, setIconPreview] = useState<string | null>(null);
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+
+    useEffect(() => {
+        onImagesChange({ bannerUrl: bannerPreview ?? undefined, iconUrl: iconPreview ?? undefined });
+    }, [bannerPreview, iconPreview, onImagesChange]);
 
     const bannerInputRef = useRef<HTMLInputElement>(null);
     const iconInputRef = useRef<HTMLInputElement>(null);
@@ -51,205 +56,140 @@ export function CustomizeRoom({ room }: CustomizeRoomProps) {
     };
 
     const handleFinalize = async () => {
-        try {
-            if (bannerFile) {
-                await uploadRoomImage(room.id, 'banner', bannerFile);
-            }
-            if (iconFile) {
-                await uploadRoomImage(room.id, 'icon', iconFile);
-            }
-            setShowSuccessDialog(true);
-        } catch (error) {
-            console.error("Error finalizing room customization:", error);
+        if (bannerFile) {
+            const res = await uploadRoomImage(room.id, 'banner', bannerFile);
+            if (!res.success) return;
         }
+        if (iconFile) {
+            const res = await uploadRoomImage(room.id, 'icon', iconFile);
+            if (!res.success) return;
+        }
+        setShowSuccessDialog(true);
     };
 
     const handleDialogClose = () => {
         setShowSuccessDialog(false);
-        router.push('/tribus');
+        router.push('/tribus/my-rooms');
     };
 
     const isUploading = !!uploading;
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <>
+            <div className="rounded-[var(--card-radius)] bg-card p-5 shadow-[var(--card-shadow)] ring-1 ring-border/70 sm:p-7">
+                <h2 className="text-lg font-bold tracking-tight">{t('rooms.create.customize.resource_upload')}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{t('rooms.create.customize.formats')}</p>
 
-            {/* Left Column: Upload Controls */}
-            <div className="space-y-6">
-                <Card className="border-border/50 shadow-md bg-card/50 backdrop-blur-xl">
-                    <CardHeader>
-                        <CardTitle>{t('rooms.create.customize.resource_upload')}</CardTitle>
-                        <CardDescription>{t('rooms.create.customize.formats')}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-
-                        {/* Banner Upload Area */}
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-sm font-medium">{t('rooms.create.customize.banner_label')}</h3>
-                                {bannerPreview && <span className="text-xs text-green-500 font-medium flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> {t('rooms.create.customize.selected')}</span>}
-                            </div>
-
-                            <input type="file" ref={bannerInputRef} onChange={(e) => handleFileChange(e, 'banner')} className="hidden" accept="image/*" />
-
-                            <div
-                                onClick={() => bannerInputRef.current?.click()}
-                                className={cn(
-                                    "relative group border-2 border-dashed border-border rounded-xl h-32 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 overflow-hidden",
-                                    "hover:border-primary hover:bg-primary/5",
-                                    bannerPreview ? "border-green-500/50 bg-green-500/5" : ""
-                                )}
-                            >
-                                {uploading === 'banner' ? (
-                                    <BubbleLoader size="md" label={t('rooms.create.customize.uploading')} />
-                                ) : bannerPreview ? (
-                                    <>
-                                        <img src={bannerPreview} alt="Banner Preview" className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-30 transition-opacity" />
-                                        <div className="z-10 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full border border-border flex items-center gap-2">
-                                            <Upload className="h-3 w-3" />
-                                            <span className="text-xs font-medium">{t('rooms.create.customize.change_image')}</span>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Upload className="h-6 w-6 text-muted-foreground mb-2 group-hover:text-primary transition-colors" />
-                                        <p className="text-sm font-medium">{t('rooms.create.customize.upload_banner')}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">{t('rooms.create.customize.banner_size')}</p>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Icon Upload Area */}
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-sm font-medium">{t('rooms.create.customize.icon_label')}</h3>
-                                {iconPreview && <span className="text-xs text-green-500 font-medium flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> {t('rooms.create.customize.selected')}</span>}
-                            </div>
-
-                            <input type="file" ref={iconInputRef} onChange={(e) => handleFileChange(e, 'icon')} className="hidden" accept="image/*" />
-
-                            <div className="flex items-center gap-4">
-                                <div
-                                    onClick={() => iconInputRef.current?.click()}
-                                    className={cn(
-                                        "relative group h-24 w-24 rounded-full border-2 border-dashed border-border flex items-center justify-center cursor-pointer transition-all overflow-hidden shrink-0",
-                                        "hover:border-primary hover:bg-primary/5",
-                                        iconPreview ? "border-green-500/50" : ""
-                                    )}
-                                >
-                                    {uploading === 'icon' ? (
-                                        <BubbleLoader size="md" />
-                                    ) : iconPreview ? (
-                                        <>
-                                            <img src={iconPreview} alt="Icon" className="absolute inset-0 w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Upload className="h-5 w-5 text-white" />
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <ImageIcon className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                                    )}
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                    <p>{t('rooms.create.customize.icon_desc')}</p>
-                                    <p className="text-xs mt-1">{t('rooms.create.customize.icon_size_hint')}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {uploadError && (
-                            <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm font-medium text-center">
-                                {uploadError}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                <div className="flex flex-col gap-3">
-                    <Button
-                        onClick={handleFinalize}
+                {/* Banner */}
+                <section className="mt-6 space-y-2.5">
+                    <UploadLabel label={t('rooms.create.customize.banner_label')} hint={t('rooms.create.customize.banner_size')} selected={!!bannerPreview} />
+                    <input type="file" ref={bannerInputRef} onChange={(e) => handleFileChange(e, 'banner')} className="hidden" accept="image/*" />
+                    <button
+                        type="button"
+                        onClick={() => bannerInputRef.current?.click()}
                         disabled={isUploading}
-                        className="w-full cursor-pointer h-12 text-base shadow-lg shadow-primary/20"
-                        size="lg"
-                    >
-                        {isUploading ? <BubbleLoader size="sm" mono className="mr-2" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-                        {t('rooms.create.customize.finalize')}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                    <p className="text-xs text-center text-muted-foreground">
-                        {t('rooms.create.customize.change_later')}
-                    </p>
-                </div>
-            </div>
-
-            {/* Right Column: Live Preview */}
-            <div className="hidden lg:block sticky top-8">
-                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-                    <Eye className="h-4 w-4" />
-                    <span className="text-sm font-medium uppercase tracking-wider">{t('rooms.create.customize.preview')}</span>
-                </div>
-
-                {/* Mock Card */}
-                <div className="relative group rounded-xl overflow-hidden border border-border bg-card shadow-2xl transition-all duration-300 hover:shadow-primary/10 hover:-translate-y-1">
-                    {/* Mock Banner */}
-                    <div className="h-40 w-full bg-secondary/50 relative overflow-hidden">
-                        {bannerPreview ? (
-                            <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-secondary/50">
-                                <span className="text-muted-foreground/50 text-sm">{t('rooms.create.customize.no_banner')}</span>
-                            </div>
+                        className={cn(
+                            "group relative flex h-36 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl transition-[border-color,background-color] duration-200",
+                            bannerPreview ? "ring-1 ring-border/70" : "border-2 border-dashed border-muted-foreground/30 hover:border-primary/60 hover:bg-primary/5"
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    </div>
+                    >
+                        {uploading === 'banner' ? (
+                            <BubbleLoader size="md" label={t('rooms.create.customize.uploading')} />
+                        ) : bannerPreview ? (
+                            <>
+                                <img src={bannerPreview} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                                <ChangeBadge label={t('rooms.create.customize.change_image')} />
+                            </>
+                        ) : (
+                            <>
+                                <span className={cn("mb-2 flex size-11 items-center justify-center rounded-[16px] rounded-bl-[5px]", tone.soft, tone.ink)}>
+                                    <ImagePlus className="size-5" />
+                                </span>
+                                <span className="text-sm font-semibold">{t('rooms.create.customize.upload_banner')}</span>
+                            </>
+                        )}
+                    </button>
+                </section>
 
-                    {/* Mock Content */}
-                    <div className="p-5 relative">
-                        {/* Mock Icon - Floating above the banner */}
-                        <div className="absolute -top-10 left-5">
-                            <div className="h-20 w-20 rounded-2xl border-4 border-card bg-secondary shadow-lg overflow-hidden flex items-center justify-center">
-                                {iconPreview ? (
-                                    <img src={iconPreview} alt="Icon" className="w-full h-full object-cover" />
-                                ) : (
-                                    <span className="text-2xl font-bold text-muted-foreground/50 uppercase">
-                                        {room.name.charAt(0)}
+                {/* Icon: same squircle-with-a-tail shape the card gives it. */}
+                <section className="mt-6 space-y-2.5">
+                    <UploadLabel label={t('rooms.create.customize.icon_label')} hint={t('rooms.create.customize.icon_size_hint')} selected={!!iconPreview} />
+                    <input type="file" ref={iconInputRef} onChange={(e) => handleFileChange(e, 'icon')} className="hidden" accept="image/*" />
+                    <div className="flex items-center gap-4">
+                        <button
+                            type="button"
+                            onClick={() => iconInputRef.current?.click()}
+                            disabled={isUploading}
+                            aria-label={t('rooms.create.customize.icon_label')}
+                            className={cn(
+                                "group relative flex size-24 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-[30px] transition-[border-color,background-color] duration-200",
+                                tone.tail,
+                                iconPreview ? "ring-1 ring-border/70" : "border-2 border-dashed border-muted-foreground/30 hover:border-primary/60 hover:bg-primary/5"
+                            )}
+                        >
+                            {uploading === 'icon' ? (
+                                <BubbleLoader size="sm" />
+                            ) : iconPreview ? (
+                                <>
+                                    <img src={iconPreview} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                                    <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                                        <RefreshCw className="size-5 text-white" />
                                     </span>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="mt-10 space-y-2">
-                            <h3 className="text-xl font-bold leading-tight">{room.name}</h3>
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                                {room.short_description || t('rooms.create.customize.preview_desc_fallback')}
-                            </p>
-
-                            <div className="pt-4 flex items-center gap-4 text-xs text-muted-foreground font-medium">
-                                <div className="flex items-center gap-1">
-                                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                                    {t('rooms.create.customize.online_count')}
-                                </div>
-                                <div>{t('rooms.create.customize.member_count')}</div>
-                            </div>
-                        </div>
+                                </>
+                            ) : (
+                                <ImagePlus className="size-6 text-muted-foreground transition-colors group-hover:text-primary" />
+                            )}
+                        </button>
+                        <p className="text-sm text-muted-foreground">{t('rooms.create.customize.icon_desc')}</p>
                     </div>
-                </div>
+                </section>
 
-                <div className="mt-6 text-center">
-                    <p className="text-sm text-muted-foreground">
-                        {t('rooms.create.customize.preview_note')}
-                    </p>
-                </div>
+                {uploadError && (
+                    <div role="alert" className="mt-6 flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                        <CircleAlert className="mt-0.5 size-4 shrink-0" />
+                        {t(uploadError, { defaultValue: t('UPLOAD_FAILED') })}
+                    </div>
+                )}
+
+                <Button onClick={handleFinalize} disabled={isUploading} size="lg" className="mt-7 h-12 w-full text-base">
+                    {isUploading ? <BubbleLoader size="sm" mono /> : null}
+                    {t(bannerFile || iconFile ? 'rooms.create.customize.finalize' : 'rooms.create.customize.skip')}
+                    {!isUploading && <ArrowRight className="size-4" />}
+                </Button>
+                <p className="mt-3 text-center text-xs text-muted-foreground">{t('rooms.create.customize.change_later')}</p>
             </div>
 
-            {/* Success Dialog */}
             <SuccessDialog
                 showSuccessDialog={showSuccessDialog}
                 setShowSuccessDialog={setShowSuccessDialog}
                 handleDialogClose={handleDialogClose}
                 room={room}
             />
+        </>
+    );
+}
+
+function UploadLabel({ label, hint, selected }: { label: string; hint: string; selected: boolean }) {
+    const { t } = useTranslation();
+    return (
+        <div className="flex items-baseline justify-between gap-3">
+            <h3 className="text-sm font-semibold">{label}</h3>
+            {selected ? (
+                <span className="flex items-center gap-1 text-xs font-semibold text-tribe-teal-ink">
+                    <Check className="size-3.5" /> {t('rooms.create.customize.selected')}
+                </span>
+            ) : (
+                <span className="text-xs text-muted-foreground">{hint}</span>
+            )}
         </div>
+    );
+}
+
+function ChangeBadge({ label }: { label: string }) {
+    return (
+        <span className="relative z-10 flex items-center gap-1.5 rounded-full bg-card/90 px-3 py-1.5 text-xs font-semibold text-card-foreground shadow-sm backdrop-blur-sm transition-opacity [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-visible:opacity-100">
+            <RefreshCw className="size-3.5" />
+            {label}
+        </span>
     );
 }
