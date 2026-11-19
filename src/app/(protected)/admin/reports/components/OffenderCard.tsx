@@ -6,8 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/src/components/ui/avatar'
 import { Badge } from '@/src/components/ui/badge';
 import { Button } from '@/src/components/ui/button';
 import { Checkbox } from '@/src/components/ui/checkbox';
-import { Eye, XCircle, UserX, ShieldAlert, Calendar, Loader2 } from 'lucide-react';
+import { Eye, XCircle, UserX, ShieldAlert, Calendar } from 'lucide-react';
 import { Offender } from '../hooks/useAdminReports';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface OffenderCardProps {
     offender: Offender;
@@ -70,7 +71,7 @@ export default function OffenderCard({ offender, index, processingId, onResolve,
                             onClick={() => onViewContext(offender.user)}
                             disabled={processingId === offender.user.id}
                         >
-                            {processingId === offender.user.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
+                            {processingId === offender.user.id ? <BubbleLoader size="sm" mono /> : <Eye className="w-3.5 h-3.5" />}
                             {t('admin.reports.evidence')}
                         </Button>
                         <Button

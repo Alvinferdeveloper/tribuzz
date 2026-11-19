@@ -5,13 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { Control, FieldValues, Path } from 'react-hook-form';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
-import { Pencil, Save, X, Loader2 } from 'lucide-react';
+import { Pencil, Save, X } from 'lucide-react';
 import { Label } from '@/src/components/ui/label';
 import { Checkbox } from '@/src/components/ui/checkbox';
 import * as LucideIcons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent } from '@/src/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 function resolveIcon(iconName: string | null): LucideIcon | null {
     if (!iconName) return null;
@@ -122,8 +123,13 @@ export function EditableHobbies<T extends FieldValues, Name extends Path<T> = Pa
                 <Card className="mt-2 border-dashed">
                     <CardContent className="p-4">
                         {hobbiesLoading ? (
-                            <div className="flex items-center justify-center space-y-4 h-32">
-                                <div className="h-8 w-8 border-2 border-primary/30 border-t-primary animate-spin rounded-full" />
+                            <div aria-hidden="true" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                {Array.from({ length: 8 }, (_, i) => (
+                                    <div key={i} className="flex h-[76px] flex-col items-center justify-center gap-2 rounded-lg border-2 border-border p-3">
+                                        <div className="size-6 animate-pulse rounded-md bg-muted" />
+                                        <div className="h-3 w-16 animate-pulse rounded-md bg-muted" />
+                                    </div>
+                                ))}
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -158,7 +164,7 @@ export function EditableHobbies<T extends FieldValues, Name extends Path<T> = Pa
                         )}
                         <div className="mt-4 flex gap-2">
                             <Button type="button" size="sm" onClick={onSave} disabled={isSaving || hobbiesLoading}>
-                                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                {isSaving ? <BubbleLoader size="sm" mono className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
                                 {t('profile.editable.save_hobbies')}
                             </Button>
                             <Button type="button" size="sm" variant="outline" onClick={handleCancel}>

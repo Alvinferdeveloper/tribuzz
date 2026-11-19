@@ -6,9 +6,10 @@ import { useForm, Controller, FieldValues, Path } from 'react-hook-form';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Textarea } from '@/src/components/ui/textarea';
-import { Pencil, Save, X, Loader2 } from 'lucide-react';
+import { Pencil, Save, X } from 'lucide-react';
 import { Label } from '@/src/components/ui/label';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface EditableFieldProps<T extends FieldValues, Name extends Path<T> = Path<T>> {
     name: Name;
@@ -115,7 +116,7 @@ export function EditableField<T extends FieldValues, Name extends Path<T> = Path
                                 className="mt-4 flex gap-2"
                             >
                                 <Button type="submit" size="sm" className="rounded-full px-4" disabled={isSaving}>
-                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                    {isSaving ? <BubbleLoader size="sm" mono className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
                                     {t('profile.editable.save')}
                                 </Button>
                                 <Button type="button" size="sm" variant="ghost" className="rounded-full px-4" onClick={() => setIsEditing(false)}>

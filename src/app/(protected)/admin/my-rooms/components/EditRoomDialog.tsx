@@ -10,9 +10,10 @@ import { Input } from '@/src/components/ui/input';
 import { Label } from '@/src/components/ui/label';
 import { Textarea } from '@/src/components/ui/textarea';
 import { Button } from '@/src/components/ui/button';
-import { Loader2, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { AdminMyRoom } from '../hooks/useAdminMyRooms';
 import { toast } from 'sonner';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface EditRoomDialogProps {
     room: AdminMyRoom;
@@ -145,7 +146,7 @@ export default function EditRoomDialog({ room, open, onOpenChange, onUpdate, onU
                 <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
                     <Button variant="outline" onClick={() => onOpenChange(false)}>{t('admin.categories.cancel')}</Button>
                     <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isSaving && <BubbleLoader size="sm" mono className="mr-2" />}
                         {t('admin.my_rooms.edit_dialog_save')}
                     </Button>
                 </div>
@@ -164,7 +165,7 @@ function ImageUpload({ label, inputRef, preview, uploading, onChange, rounded = 
             <input type="file" ref={inputRef} onChange={onChange} className="hidden" accept="image/*" />
             <div onClick={() => inputRef.current?.click()}
                 className={`h-24 ${rounded === 'full' ? 'w-24 rounded-full' : 'w-full rounded-lg'} border-2 border-dashed border-muted-foreground/30 flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all overflow-hidden relative group ${rounded === 'full' ? 'mx-auto' : ''}`}>
-                {uploading ? <Loader2 className="h-5 w-5 animate-spin" />
+                {uploading ? <BubbleLoader size="sm" mono />
                     : preview ? (
                         <>
                             <img src={preview} alt={label} className="w-full h-full object-cover" />

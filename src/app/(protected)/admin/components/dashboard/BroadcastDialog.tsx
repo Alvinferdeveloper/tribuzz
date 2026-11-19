@@ -1,6 +1,6 @@
 'use client';
 
-import { Megaphone, Send, Loader2 } from 'lucide-react';
+import { Megaphone, Send } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import {
     Dialog,
@@ -13,6 +13,7 @@ import {
 import { Textarea } from '@/src/components/ui/textarea';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 export default function BroadcastDialog({
     open,
@@ -67,7 +68,7 @@ export default function BroadcastDialog({
                         {t('admin.broadcast.cancel')}
                     </Button>
                     <Button onClick={handleSend} disabled={isSubmitting || !message.trim()} className="gap-2 rounded-xl active:scale-[0.95] transition-transform duration-100">
-                        {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        {isSubmitting ? <BubbleLoader size="sm" mono /> : <Send className="h-4 w-4" />}
                         {t('admin.broadcast.send')}
                     </Button>
                 </DialogFooter>

@@ -8,8 +8,8 @@ import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Label } from '@/src/components/ui/label';
 import { Textarea } from '@/src/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface CreateRoomDialogProps {
     open: boolean;
@@ -116,7 +116,7 @@ export default function CreateRoomDialog({ open, onOpenChange, onCreate }: Creat
                         {t('admin.categories.cancel')}
                     </Button>
                     <Button onClick={handleCreate} disabled={isCreating || !isValid}>
-                        {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isCreating && <BubbleLoader size="sm" mono className="mr-2" />}
                         {t('admin.my_rooms.create_dialog_confirm')}
                     </Button>
                 </div>

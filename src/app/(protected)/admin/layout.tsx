@@ -4,11 +4,12 @@ import { useAuth } from '@/src/app/hooks/useAuth';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { Loader2, ShieldCheck, LayoutDashboard, MessageSquare, Users, AlertCircle, Tag, LogOut, ChevronRight, SunMoon, Home, History } from 'lucide-react';
+import { ShieldCheck, LayoutDashboard, MessageSquare, Users, AlertCircle, Tag, LogOut, ChevronRight, SunMoon, Home, History } from 'lucide-react';
 import { ThemeToggle } from '@/src/app/components/layout/ThemeToggle';
 import { cn } from '@/src/lib/utils';
 import { useAdminNotifications } from '@/src/app/(protected)/admin/hooks/useAdminNotifications';
 import { useTranslation } from 'react-i18next';
+import { PageLoader } from "@/src/components/ui/bubble-loader";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { t } = useTranslation();
@@ -38,9 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     if (isPending) {
         return (
-            <div className="flex h-screen items-center justify-center bg-admin-surface">
-                <Loader2 className="h-8 w-8 animate-spin text-admin-nav-icon" />
-            </div>
+            <PageLoader className="h-screen bg-admin-surface" />
         );
     }
 

@@ -11,8 +11,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/src/components/ui/dropdown-menu';
-import { Mail, Calendar, Eye, Shield, UserX, UserCheck, Loader2 } from 'lucide-react';
+import { Mail, Calendar, Eye, Shield, UserX, UserCheck } from 'lucide-react';
 import { User } from '../hooks/useAdminUsers';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface UserRowProps {
     user: User;
@@ -111,7 +112,7 @@ export default function UserRow({ user, index, isMe, processingId, onView, onCha
                     onClick={() => onAction(user)}
                 >
                     {processingId === user.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <BubbleLoader size="sm" mono />
                     ) : user.isBanned ? (
                         <UserCheck className="h-3.5 w-3.5" />
                     ) : (

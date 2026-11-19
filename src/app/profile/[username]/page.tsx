@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { UserProfile } from '@/src/app/profile/components/UserProfile';
 import { useTranslation } from 'react-i18next';
+import { ProfileSkeleton } from "@/src/app/profile/components/ProfileSkeleton";
 import { Suspense } from 'react';
 import { Button } from '@/src/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -26,12 +27,7 @@ export default function OtherProfilePage() {
                     <ArrowLeft className="mr-2 h-4 w-4" /> {t('profile.public.back')}
                 </Button>
 
-                <Suspense fallback={
-                    <div className="flex flex-col items-center justify-center space-y-4 h-64">
-                        <div className="h-12 w-12 border-4 border-primary/30 border-t-primary animate-spin rounded-full" />
-                        <p className="text-muted-foreground animate-pulse">{t('profile.public.loading')}</p>
-                    </div>
-                }>
+                <Suspense fallback={<ProfileSkeleton />}>
                     <UserProfile targetUsername={username} />
                 </Suspense>
             </div>

@@ -8,10 +8,12 @@ import { EditableSelectField } from './EditableSelectField';
 import { EditableHobbies } from './EditableHobbies';
 import { Avatar, AvatarFallback, AvatarImage } from '@/src/components/ui/avatar';
 import { Button } from '@/src/components/ui/button';
-import { Mail, Upload, Loader2, ShieldAlert } from 'lucide-react';
+import { Mail, Upload, ShieldAlert } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/src/components/ui/card';
 import { Label } from '@/src/components/ui/label';
 import { motion } from 'framer-motion';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
+import { ProfileSkeleton } from './ProfileSkeleton';
 
 const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -50,12 +52,12 @@ export function UserProfile({ targetUsername }: { targetUsername?: string }) {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center space-y-4 h-64">
-                <div className="h-12 w-12 border-4 border-primary/30 border-t-primary animate-spin rounded-full" />
-                <p className="text-muted-foreground animate-pulse">
+            <>
+                <span role="status" className="sr-only">
                     {isReadOnly ? t('profile.loading_other', { targetUsername }) : t('profile.loading_own')}
-                </p>
-            </div>
+                </span>
+                <ProfileSkeleton />
+            </>
         );
     }
 
@@ -109,7 +111,7 @@ export function UserProfile({ targetUsername }: { targetUsername?: string }) {
                                     </AvatarFallback>
                                     {isUploading && (
                                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
-                                            <Loader2 className="h-10 w-10 text-white animate-spin" />
+                                            <BubbleLoader size="md" mono className="text-white" />
                                         </div>
                                     )}
                                 </Avatar>

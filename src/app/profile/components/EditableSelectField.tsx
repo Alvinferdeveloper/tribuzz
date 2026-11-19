@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { useForm, Controller, FieldValues, Path } from 'react-hook-form';
 import { Button } from '@/src/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/src/components/ui/select';
-import { Pencil, Save, X, Loader2 } from 'lucide-react';
+import { Pencil, Save, X } from 'lucide-react';
 import { Label } from '@/src/components/ui/label';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface Option {
     value: string;
@@ -100,7 +101,7 @@ export function EditableSelectField<T extends FieldValues, Name extends Path<T> 
                             {errors[name] && <p className="mt-1 text-xs text-red-500">{(errors[name] as any).message}</p>}
                             <div className="mt-3 flex gap-2">
                                 <Button type="submit" size="sm" disabled={isSaving}>
-                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                    {isSaving ? <BubbleLoader size="sm" mono className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
                                     {t('profile.editable.save')}
                                 </Button>
                                 <Button type="button" size="sm" variant="outline" onClick={handleCancel}>

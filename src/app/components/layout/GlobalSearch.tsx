@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, MessageSquare, X, Loader2 } from 'lucide-react';
+import { Search, MessageSquare, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useRoomSearch } from '@/src/app/hooks/useRoomSearch';
 import { useTranslation } from '@/src/app/lib/i18n';
@@ -79,8 +79,16 @@ export function GlobalSearch() {
                 <div className="absolute top-full left-0 right-0 mt-2 bg-background border rounded-xl shadow-xl overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200">
                     <div className="p-2">
                         {isLoading ? (
-                            <div className="flex items-center justify-center py-10">
-                                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                            <div aria-hidden="true" className="space-y-1 pt-7">
+                                {[0, 1, 2].map((i) => (
+                                    <div key={i} className="flex items-center gap-3 p-3">
+                                        <div className="size-10 shrink-0 animate-pulse rounded-full bg-muted" />
+                                        <div className="flex-1 space-y-2">
+                                            <div className="h-3.5 w-1/2 animate-pulse rounded-md bg-muted" />
+                                            <div className="h-3 w-4/5 animate-pulse rounded-md bg-muted" />
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         ) : results.length > 0 ? (
                             <div className="max-h-[400px] overflow-y-auto custom-scrollbar">

@@ -14,6 +14,7 @@ import RoomCardFooter from '@/src/app/tribus/my-rooms/components/RoomCardFooter'
 import { RoomStatus } from '@/src/app/tribus/hooks/useRoom';
 import { cn } from '@/src/lib/utils';
 import { BubbleLoader } from "@/src/components/ui/bubble-loader";
+import { RoomSkeleton } from '@/src/app/tribus/components/RoomSkeleton';
 
 type StatusTab = RoomStatus | 'ALL';
 const STATUS_TABS: StatusTab[] = ['ALL', 'IN_REVISION', 'ACCEPTED', 'REJECTED'];
@@ -43,14 +44,6 @@ export default function MyRoomsPage() {
     };
 
     const emptyKey = activeTab === 'ALL' ? 'empty_all' : `empty_${activeTab.toLowerCase()}`;
-
-    if (loading && rooms.length === 0) {
-        return (
-            <div className="min-h-[70dvh] flex items-center justify-center">
-                <BubbleLoader size="lg" label={t('rooms.my-rooms.loading')} />
-            </div>
-        );
-    }
 
     return (
         <AuthGuard>
@@ -119,6 +112,7 @@ export default function MyRoomsPage() {
                     ) : (
                         <>
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                {loading && rooms.length === 0 && [...Array(8)].map((_, i) => <RoomSkeleton key={i} />)}
                                 {rooms.map((room, index) => (
                                     <RoomCard
                                         key={room.id}

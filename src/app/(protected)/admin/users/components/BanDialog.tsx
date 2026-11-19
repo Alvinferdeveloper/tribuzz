@@ -12,8 +12,9 @@ import {
 } from '@/src/components/ui/dialog';
 import { Button } from '@/src/components/ui/button';
 import { Textarea } from '@/src/components/ui/textarea';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Trans } from 'react-i18next';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface BanDialogProps {
     isOpen: boolean;
@@ -75,7 +76,7 @@ export function BanDialog({ isOpen, onClose, onConfirm, username }: BanDialogPro
                     >
                         {isSubmitting ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <BubbleLoader size="sm" mono className="mr-2" />
                                 {t('admin.ban_dialog.banning')}
                             </>
                         ) : (

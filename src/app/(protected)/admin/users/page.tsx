@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardContent } from '@/src/components/ui/card';
 import { Input } from '@/src/components/ui/input';
 import { Badge } from '@/src/components/ui/badge';
-import { Search, Users, AlertCircle, Loader2 } from 'lucide-react';
+import { Search, Users, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { BanDialog } from './components/BanDialog';
 import { UserDetailSheet } from './components/UserDetailSheet';

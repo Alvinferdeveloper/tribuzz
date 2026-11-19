@@ -1,10 +1,11 @@
 'use client';
 
-import { Activity, Hash, Loader2 } from 'lucide-react';
+import { Activity, Hash } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface ActiveRoom {
     id: string;
@@ -26,7 +27,7 @@ export default function ActiveRoomsList({ rooms, loading }: { rooms: ActiveRoom[
         >
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold tracking-tight">{t('admin.active_rooms.title')}</h2>
-                {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                {loading && <BubbleLoader size="sm" mono className="text-muted-foreground" />}
                 {!loading && (
                     <span className="text-xs text-muted-foreground tabular-nums">{t('admin.active_rooms.count', { count: rooms.length })}</span>
                 )}

@@ -13,11 +13,12 @@ import { ScrollArea } from '@/src/components/ui/scroll-area';
 import { Badge } from '@/src/components/ui/badge';
 import { Button } from '@/src/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/src/components/ui/avatar';
-import { MessageSquare, Clock, Calendar, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { MessageSquare, Clock, Calendar, CheckCircle2, XCircle } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { DetailedReport } from '../hooks/useAdminReports';
 import { Message, isTextMessage, isImageMessage } from '@/src/types/chat';
 import { APP_NAME } from '@/src/app/constants';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 const ease = [0.23, 1, 0.32, 1] as const;
 
@@ -128,7 +129,7 @@ export function ChatContextDialog({ isOpen, onClose, reports, reportedUsername, 
                                                         onClick={() => onResolve(report.id, 'DISMISSED')}
                                                         disabled={processingReportId === report.id}
                                                     >
-                                                        {processingReportId === report.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
+                                                        {processingReportId === report.id ? <BubbleLoader size="sm" mono /> : <XCircle className="w-3 h-3" />}
                                                         {t('admin.reports.dismiss')}
                                                     </Button>
                                                     <Button
@@ -138,7 +139,7 @@ export function ChatContextDialog({ isOpen, onClose, reports, reportedUsername, 
                                                         onClick={() => onResolve(report.id, 'RESOLVED')}
                                                         disabled={processingReportId === report.id}
                                                     >
-                                                        {processingReportId === report.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                                                        {processingReportId === report.id ? <BubbleLoader size="sm" mono /> : <CheckCircle2 className="w-3 h-3" />}
                                                         {t('admin.reports.resolve')}
                                                     </Button>
                                                 </div>

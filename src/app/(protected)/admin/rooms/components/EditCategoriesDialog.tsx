@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useCategories } from '@/src/app/tribus/create/hooks/useCategories';
 import { CategorySelector } from '@/src/app/tribus/create/components/CategorySelector';
 import { Button } from '@/src/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { AdminRoom } from '../hooks/useAdminRooms';
 import { toast } from 'sonner';
+import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
 interface EditCategoriesDialogProps {
     room: AdminRoom;
@@ -62,7 +62,7 @@ export default function EditCategoriesDialog({ room, open, onOpenChange, onUpdat
                 <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
                     <Button variant="outline" onClick={() => onOpenChange(false)}>{t('admin.categories.cancel')}</Button>
                     <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isSaving && <BubbleLoader size="sm" mono className="mr-2" />}
                         {t('admin.my_rooms.edit_dialog_save')}
                     </Button>
                 </div>
