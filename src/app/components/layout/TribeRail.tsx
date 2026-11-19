@@ -12,6 +12,7 @@ import useRoom from '@/src/app/tribus/hooks/useRoom';
 import { useRoomUserCounts } from '@/src/app/tribus/hooks/useRoomUserCounts';
 import { UserNav } from '@/src/app/components/layout/ProfileDropDown';
 import { ThemeIconButton } from '@/src/app/components/layout/ThemeIconButton';
+import { MoreMenu } from '@/src/app/components/layout/MoreMenu';
 import { tribeTone } from '@/src/app/utils/tribeColor';
 import { cn } from '@/src/lib/utils';
 import { useAuthPrompt } from '@/src/app/components/auth/AuthPrompt';
@@ -100,6 +101,8 @@ export function TribeRail({ currentRoom }: { currentRoom?: CurrentRoom } = {}) {
                 </RailItem>
 
                 <div className="mt-auto flex flex-col items-center gap-3">
+                    {/* Help and legal links live here: app surfaces have no footer. */}
+                    <MoreMenu />
                     <ThemeIconButton />
                     <UserNav compact menuSide="right" menuAlign="end" />
                 </div>

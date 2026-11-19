@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import Footer from '@/src/app/components/layout/Footer';
 import { ThemeToggle } from '@/src/app/components/layout/ThemeToggle';
+import { MoreMenu } from '@/src/app/components/layout/MoreMenu';
 import { TribeRail } from '@/src/app/components/layout/TribeRail';
 import { MobileTabBar } from '@/src/app/components/layout/MobileTabBar';
 import { AuthPromptProvider } from '@/src/app/components/auth/AuthPrompt';
@@ -14,6 +14,8 @@ import { cn } from '@/src/lib/utils';
 /**
  * Frame for the /tribus pages: the tribe rail on desktop, a bottom tab bar on
  * mobile, and no top navbar (the explore page's hero runs edge to edge).
+ * No footer either: these are app screens with infinite scroll, so a footer
+ * would be unreachable; its help/legal links live in the "More" menu.
  * The landing keeps its own header via GlobalLayout.
  */
 export function TribesShell({ children }: { children: React.ReactNode }) {
@@ -34,12 +36,18 @@ export function TribesShell({ children }: { children: React.ReactNode }) {
                         <Image src="/images/logo_chat.png" width={28} height={28} alt="" className="size-7" />
                         <span className="text-lg font-bold tracking-tight">{APP_NAME}</span>
                     </Link>
-                    <ThemeToggle />
+                    <div className="flex items-center gap-1">
+                        <MoreMenu
+                            side="bottom"
+                            align="end"
+                            className={overHero ? "text-white/85 hover:bg-white/15 hover:text-white data-[state=open]:bg-white/15 data-[state=open]:text-white" : undefined}
+                        />
+                        <ThemeToggle />
+                    </div>
                 </div>
 
                 <main className="pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">
                     {children}
-                    <Footer />
                 </main>
 
                 <MobileTabBar />
