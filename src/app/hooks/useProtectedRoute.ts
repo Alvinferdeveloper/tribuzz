@@ -5,15 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export function useProtectedRoute() {
-  const { session, isPending } = useSession();
+  const { session, isPending, isChecking } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (isPending) return;
+    // Wait for any session check (e.g. right after signing in) before
+    // deciding there's no session.
+    if (isChecking) return;
     if (!session) {
       router.replace("/login");
     }
-  }, [session, isPending, router]);
+  }, [session, isChecking, router]);
 
   return { isAuthenticated: !!session, isPending };
 }

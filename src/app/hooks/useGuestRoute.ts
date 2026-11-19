@@ -7,17 +7,17 @@ import { useEffect } from "react";
 const GUEST_ROUTES = ["/", "/login", "/signup", "/verify-email", "/forgot-password"];
 
 export function useGuestRoute() {
-  const { session, isPending } = useSession();
+  const { session, isPending, isChecking } = useSession();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (isPending) return;
+    if (isChecking) return;
 
     if (session && GUEST_ROUTES.includes(pathname)) {
       router.replace("/tribus");
     }
-  }, [session, isPending, pathname, router]);
+  }, [session, isChecking, pathname, router]);
 
   return { isAuthenticated: !!session, isPending };
 }

@@ -13,7 +13,7 @@ import { PageLoader } from "@/src/components/ui/bubble-loader";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { t } = useTranslation();
-    const { session, isPending } = useAuth();
+    const { session, isPending, isChecking } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
 
@@ -30,12 +30,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     useAdminNotifications();
 
     useEffect(() => {
-        if (!isPending) {
-            if (!session?.user || (session.user as any).role !== 'ADMIN') {
-                router.push('/tribus');
-            }
+        if (isChecking) return;
+        if (!session?.user || (session.user as any).role !== 'ADMIN') {
+            router.push('/tribus');
         }
-    }, [session, isPending, router]);
+    }, [session, isChecking, router]);
 
     if (isPending) {
         return (
