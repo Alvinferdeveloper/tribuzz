@@ -15,8 +15,8 @@ import { useRoomUserCounts } from '@/src/app/tribus/hooks/useRoomUserCounts';
 import { useDebounce } from '@/src/app/hooks/useDebounce';
 import { Search, X, TriangleAlert, Compass } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
-import { cn } from '@/src/lib/utils';
 import { BubbleKicker } from '@/src/app/components/brand/BubbleKicker';
+import { TopicChip } from '@/src/app/tribus/components/TopicChip';
 import { APP_NAME } from '@/src/app/constants';
 import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 
@@ -159,13 +159,14 @@ export default function Rooms() {
                     search was focused, so most people never saw it). */}
                 {categories.length > 0 && (
                     <nav aria-label={t('rooms.search.suggestions')} className="chip-rail -mx-4 flex gap-2 overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0">
-                        <CategoryChip
+                        <TopicChip
                             label={t('rooms.filter.all')}
+                            withBadge={false}
                             active={activeQuery === ''}
                             onClick={() => setSearchQuery('')}
                         />
                         {categories.map(category => (
-                            <CategoryChip
+                            <TopicChip
                                 key={category.id}
                                 label={category.name}
                                 icon={category.icon}
@@ -241,26 +242,5 @@ export default function Rooms() {
                 )}
             </div>
         </div>
-    );
-}
-
-function CategoryChip({ label, icon, active, onClick }: { label: string; icon?: string | null; active: boolean; onClick: () => void }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            aria-pressed={active}
-            className={cn(
-                "inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 text-sm font-semibold",
-                "transition-[background-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.97]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-                active
-                    ? "bg-foreground text-background shadow-[0_4px_12px_-6px_var(--shadow-tint)]"
-                    : "bg-card text-muted-foreground ring-1 ring-border hover:text-foreground hover:ring-muted-foreground/40"
-            )}
-        >
-            {icon && <span aria-hidden="true">{icon}</span>}
-            {label}
-        </button>
     );
 }

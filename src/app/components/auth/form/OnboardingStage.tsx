@@ -6,7 +6,7 @@ import { useFormContext } from 'react-hook-form';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Buddy } from '@/src/app/components/brand/Buddy';
 import { NightSky } from '@/src/app/components/brand/NightSky';
-import { HobbyBadge } from '@/src/app/components/brand/HobbyGlyph';
+import { TopicBadge } from '@/src/app/components/brand/TopicGlyph';
 import { ConversationGlyph, CONVERSATION_TYPES, type ConversationType } from '@/src/app/components/brand/ConversationGlyph';
 import { useDebounce } from '@/src/app/hooks/useDebounce';
 import { ProfileFormValues } from '@/src/lib/validators/user';
@@ -115,7 +115,7 @@ export function OnboardingStage({ step, hobbies }: { step: OnboardingStep; hobbi
                         {chosenHobbies.length > 0 ? (
                             chosenHobbies.slice(0, 7).map(h => (
                                 <motion.span key={h.id} initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 26 }}>
-                                    <HobbyBadge name={h.name} icon={h.icon} size="sm" />
+                                    <TopicBadge name={h.name} icon={h.icon} size="sm" />
                                 </motion.span>
                             ))
                         ) : (

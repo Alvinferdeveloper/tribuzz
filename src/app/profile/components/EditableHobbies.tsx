@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Control, FieldValues, Path } from 'react-hook-form';
 import { Check, Plus } from 'lucide-react';
-import { HobbyGlyph } from '@/src/app/components/brand/HobbyGlyph';
+import { TopicGlyph } from '@/src/app/components/brand/TopicGlyph';
 import { motion, AnimatePresence } from 'framer-motion';
 import { tribeTone } from '@/src/app/utils/tribeColor';
 import { EditActions, EditButton } from './EditableField';
@@ -95,7 +95,7 @@ export function EditableHobbies<T extends FieldValues, Name extends Path<T> = Pa
                                 const tone = tribeTone(hobby.name);
                                 return (
                                     <span key={hobby.id} className={cn("inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-sm font-semibold", tone.soft, tone.ink)}>
-                                        <HobbyGlyph name={hobby.name} icon={hobby.icon} className="size-4" />
+                                        <TopicGlyph name={hobby.name} icon={hobby.icon} className="size-4" />
                                         {hobby.name}
                                     </span>
                                 );
@@ -147,7 +147,7 @@ export function EditableHobbies<T extends FieldValues, Name extends Path<T> = Pa
                                                     : "bg-card text-muted-foreground ring-1 ring-border hover:text-foreground hover:ring-muted-foreground/40"
                                             )}
                                         >
-                                            {selected ? <Check className="size-4" strokeWidth={2.5} /> : <HobbyGlyph name={hobby.name} icon={hobby.icon} className="size-4" />}
+                                            {selected ? <Check className="size-4" strokeWidth={2.5} /> : <TopicGlyph name={hobby.name} icon={hobby.icon} className="size-4" />}
                                             {hobby.name}
                                         </button>
                                     );

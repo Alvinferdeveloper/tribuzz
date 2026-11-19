@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { ConnectingAnimation } from '@/src/app/components/animations/ConnectionAnimation';
 import { BadgeCheck, ArrowRight } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
+import { TopicGlyph } from '@/src/app/components/brand/TopicGlyph';
+import { tribeTone } from '@/src/app/utils/tribeColor';
 
 interface RoomCardContentProps {
     name: string;
@@ -53,9 +55,9 @@ export function RoomCardContent({ name, description, verified, userCount, isConn
                 </span>
 
                 {firstCategory && (
-                    <span className="truncate text-muted-foreground">
-                        {firstCategory.icon && <span aria-hidden="true" className="mr-1">{firstCategory.icon}</span>}
-                        {firstCategory.name}
+                    <span className="inline-flex min-w-0 items-center gap-1 text-muted-foreground">
+                        <TopicGlyph name={firstCategory.name} icon={firstCategory.icon} className={cn("size-3.5", tribeTone(firstCategory.name).ink)} />
+                        <span className="truncate">{firstCategory.name}</span>
                     </span>
                 )}
 

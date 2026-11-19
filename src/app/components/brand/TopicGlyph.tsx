@@ -2,11 +2,12 @@ import { tribeTone } from "@/src/app/utils/tribeColor";
 import { cn } from "@/src/lib/utils";
 
 /**
- * Hand-drawn glyphs for hobbies, in the brand's line style (24px grid,
- * 2px round strokes, currentColor). Hobbies come from the API with an emoji
- * as their icon; when we have a glyph for the hobby's name we draw it,
- * otherwise we fall back to that emoji, so a hobby added later still shows
- * something meaningful instead of a question mark.
+ * Hand-drawn glyphs for topics: the hobbies people pick and the categories
+ * tribes belong to (many overlap: art, music, cooking…). Brand line style:
+ * 24px grid, 2px round strokes, currentColor. Topics come from the API with
+ * an emoji as their icon; when we have a glyph for the topic's name we draw
+ * it, otherwise we fall back to that emoji, so a topic an admin adds later
+ * still shows something meaningful instead of a question mark.
  */
 
 const GLYPHS: Record<string, React.ReactNode> = {
@@ -138,6 +139,31 @@ const GLYPHS: Record<string, React.ReactNode> = {
             <path d="M15.5 8.5 21 3" />
         </>
     ),
+    noticias: (
+        <>
+            <path d="M5 4.5h11a1 1 0 0 1 1 1V19a1.5 1.5 0 0 0 1.5 1.5H6.5A2.5 2.5 0 0 1 4 18V5.5a1 1 0 0 1 1-1z" />
+            <path d="M17 9h2.5a.5.5 0 0 1 .5.5V19a1.5 1.5 0 0 1-3 0" />
+            <path d="M7.5 8.5h6M7.5 12h6M7.5 15.5h3.5" />
+        </>
+    ),
+    saludmental: (
+        <>
+            <path d="M12 20.5s-7.5-4.4-7.5-10A4.3 4.3 0 0 1 12 7.8a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10-7.5 10z" />
+            <path d="M8.5 12.5h2l1.2-2.2 1.6 4 1.2-1.8h1.5" />
+        </>
+    ),
+    ciencia: (
+        <>
+            <path d="M9.5 3.5h5M10.5 3.5v5.2L5.2 17.6A2 2 0 0 0 7 20.5h10a2 2 0 0 0 1.8-2.9l-5.3-8.9V3.5" />
+            <path d="M7.4 14.5h9.2" />
+        </>
+    ),
+    entretenimiento: (
+        <>
+            <path d="M4 8a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2.5a2 2 0 0 0 0 4V17a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2.5a2 2 0 0 0 0-4z" />
+            <path d="M14.5 7v2M14.5 11.5v1M14.5 15v3" />
+        </>
+    ),
 };
 
 /** Other names the same hobby goes by. */
@@ -145,7 +171,6 @@ const ALIASES: Record<string, string> = {
     gaming: "videojuegos",
     juegos: "videojuegos",
     "cine y tv": "cine",
-    entretenimiento: "cine",
     deporte: "deportes",
     libros: "lectura",
     viajar: "viajes",
@@ -155,10 +180,13 @@ const ALIASES: Record<string, string> = {
     "naturaleza y senderismo": "naturaleza",
     senderismo: "naturaleza",
     "astronomia y ciencia": "astronomia",
-    ciencia: "astronomia",
     "anime y manga": "anime",
     manga: "anime",
     escribir: "escritura",
+    "salud mental": "saludmental",
+    bienestar: "saludmental",
+    noticia: "noticias",
+    actualidad: "noticias",
 };
 
 function slug(name: string) {
@@ -170,8 +198,8 @@ function glyphFor(name: string) {
     return GLYPHS[ALIASES[key] ?? key];
 }
 
-/** The hobby's glyph in currentColor, or its emoji when there's no glyph. */
-export function HobbyGlyph({ name, icon, className }: { name: string; icon?: string | null; className?: string }) {
+/** The topic's glyph in currentColor, or its emoji when there's no glyph. */
+export function TopicGlyph({ name, icon, className }: { name: string; icon?: string | null; className?: string }) {
     const glyph = glyphFor(name);
     if (!glyph) {
         return icon ? <span aria-hidden="true" className={cn("leading-none", className)}>{icon}</span> : null;
@@ -193,21 +221,22 @@ export function HobbyGlyph({ name, icon, className }: { name: string; icon?: str
 }
 
 const BADGE_SIZE = {
+    xs: { box: "size-6 rounded-[8px]", glyph: "size-4 text-[13px]" },
     sm: { box: "size-8 rounded-[11px]", glyph: "size-[18px] text-base" },
     md: { box: "size-11 rounded-[15px]", glyph: "size-6 text-xl" },
     lg: { box: "size-14 rounded-[19px]", glyph: "size-7 text-2xl" },
 } as const;
 
 /**
- * The hobby's glyph on a speech bubble in its logo color (the same color
- * its chip wears on profiles), for tiles and pickers.
+ * The topic's glyph on a speech bubble in its logo color (the same color
+ * its chip wears everywhere), for tiles, pickers and filter chips.
  */
-export function HobbyBadge({ name, icon, size = "md", className }: { name: string; icon?: string | null; size?: keyof typeof BADGE_SIZE; className?: string }) {
+export function TopicBadge({ name, icon, size = "md", className }: { name: string; icon?: string | null; size?: keyof typeof BADGE_SIZE; className?: string }) {
     const tone = tribeTone(name);
     const s = BADGE_SIZE[size];
     return (
         <span className={cn("flex shrink-0 items-center justify-center text-[oklch(0.2_0.04_265)]", s.box, tone.fill, tone.tail, className)}>
-            <HobbyGlyph name={name} icon={icon} className={s.glyph} />
+            <TopicGlyph name={name} icon={icon} className={s.glyph} />
         </span>
     );
 }

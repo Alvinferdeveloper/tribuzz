@@ -7,6 +7,7 @@ import { Category } from '../hooks/useCategories';
 import { useCategorySearch } from '../hooks/useCategorySearch';
 import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 import { cn } from '@/src/lib/utils';
+import { TopicChip } from '@/src/app/tribus/components/TopicChip';
 
 const MAX_CATEGORIES = 3;
 
@@ -17,7 +18,7 @@ interface CategorySelectorProps {
     loading?: boolean;
 }
 
-const chipBase = "inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
+const chipBase = "inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full px-4 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
 
 export function CategorySelector({ categories, selectedIds, onChange, loading }: CategorySelectorProps) {
     const { t } = useTranslation();
@@ -47,17 +48,15 @@ export function CategorySelector({ categories, selectedIds, onChange, loading }:
             {selectedCategories.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                     {selectedCategories.map(category => (
-                        <button
+                        <TopicChip
                             key={category.id}
-                            type="button"
+                            label={category.name}
+                            icon={category.icon}
+                            active
                             onClick={() => onChange(selectedIds.filter(id => id !== category.id))}
-                            aria-label={t('rooms.create.categories.remove', { name: category.name })}
-                            className={cn(chipBase, "bg-foreground text-background shadow-[0_4px_12px_-6px_var(--shadow-tint)] hover:opacity-90")}
-                        >
-                            {category.icon && <span aria-hidden="true">{category.icon}</span>}
-                            {category.name}
-                            <X className="size-3.5 opacity-70" />
-                        </button>
+                            ariaLabel={t('rooms.create.categories.remove', { name: category.name })}
+                            trailing={<X className="-mr-1 size-3.5 opacity-70" />}
+                        />
                     ))}
                 </div>
             )}
@@ -92,16 +91,13 @@ export function CategorySelector({ categories, selectedIds, onChange, loading }:
                             </span>
                         ) : (
                             availableCategories.map(category => (
-                                <button
+                                <TopicChip
                                     key={category.id}
-                                    type="button"
+                                    label={category.name}
+                                    icon={category.icon}
                                     onClick={() => onChange([...selectedIds, category.id])}
-                                    className={cn(chipBase, "bg-card text-muted-foreground ring-1 ring-border hover:text-foreground hover:ring-muted-foreground/40")}
-                                >
-                                    {category.icon && <span aria-hidden="true">{category.icon}</span>}
-                                    {category.name}
-                                    <Plus className="size-3.5 opacity-60" />
-                                </button>
+                                    trailing={<Plus className="-mr-1 size-3.5 opacity-60" />}
+                                />
                             ))
                         )}
 

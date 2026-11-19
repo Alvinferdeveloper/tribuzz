@@ -6,7 +6,7 @@ import { Check } from 'lucide-react';
 import { Input } from '@/src/components/ui/input';
 import { Label } from '@/src/components/ui/label';
 import { Textarea } from '@/src/components/ui/textarea';
-import { HobbyBadge } from '@/src/app/components/brand/HobbyGlyph';
+import { TopicBadge } from '@/src/app/components/brand/TopicGlyph';
 import { ConversationBadge, CONVERSATION_TYPES } from '@/src/app/components/brand/ConversationGlyph';
 import { ProfileFormValues } from '@/src/lib/validators/user';
 import { cn } from '@/src/lib/utils';
@@ -184,7 +184,7 @@ export function StepHobbies({ hobbies, loading }: { hobbies: Hobby[]; loading: b
                                         : 'ring-1 ring-border/70 hover:ring-muted-foreground/40'
                                 )}
                             >
-                                <HobbyBadge name={hobby.name} icon={hobby.icon} />
+                                <TopicBadge name={hobby.name} icon={hobby.icon} />
                                 <span className="text-center leading-tight">{hobby.name}</span>
                                 <span
                                     aria-hidden="true"
