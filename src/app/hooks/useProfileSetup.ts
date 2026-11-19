@@ -48,7 +48,8 @@ export function useProfileSetup() {
         fetchHobbies();
     }, []);
 
-    const handleSubmit = async (values: ProfileFormValues, onSuccess: () => void) => {
+    /** Saves the profile; resolves with the error code on failure, null on success. */
+    const handleSubmit = async (values: ProfileFormValues, onSuccess: () => void): Promise<string | null> => {
         setError(null);
 
         try {
@@ -68,12 +69,15 @@ export function useProfileSetup() {
 
             if (response.ok) {
                 onSuccess();
-            } else {
-                const errorData = await response.json();
-                setError(errorData.message || 'PROFILE_SAVE_ERROR');
+                return null;
             }
-        } catch (err) {
+            const errorData = await response.json();
+            const code = errorData.message || 'PROFILE_SAVE_ERROR';
+            setError(code);
+            return code;
+        } catch {
             setError('PROFILE_SAVE_NETWORK_ERROR');
+            return 'PROFILE_SAVE_NETWORK_ERROR';
         }
     };
 
