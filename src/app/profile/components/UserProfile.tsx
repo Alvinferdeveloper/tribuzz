@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
     IconBuddy, IconBubbleHeart, IconBubbleDials, IconBubbleLock, IconBubbleCamera,
-    IconBubblePin, IconTwoBubbles, IconBubbleMail, IconTypingSpark,
+    IconBubblePin, IconBubbleMail, IconTypingSpark,
 } from '@/src/app/components/brand/icons';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { EditableField } from './EditableField';
@@ -15,6 +15,7 @@ import { EditableHobbies } from './EditableHobbies';
 import { ProfileSkeleton } from './ProfileSkeleton';
 import { Buddy } from '@/src/app/components/brand/Buddy';
 import { tribeTone, type TribeToneKey } from '@/src/app/utils/tribeColor';
+import { ConversationGlyph, type ConversationType } from '@/src/app/components/brand/ConversationGlyph';
 import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 import { cn } from '@/src/lib/utils';
 
@@ -171,7 +172,7 @@ export function UserProfile({ targetUsername }: { targetUsername?: string }) {
                                 )}
                                 {conversationLabel && (
                                     <span className={cn("inline-flex items-center gap-1.5 rounded-[12px] rounded-bl-[4px] px-2.5 py-1 text-xs font-semibold", tone.soft, tone.ink)}>
-                                        <IconTwoBubbles className="size-3.5" />{conversationLabel}
+                                        <ConversationGlyph type={user.conversationType as ConversationType} className="size-3.5" />{conversationLabel}
                                     </span>
                                 )}
                                 {!isReadOnly && user.email && (

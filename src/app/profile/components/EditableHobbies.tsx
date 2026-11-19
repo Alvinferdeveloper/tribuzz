@@ -4,25 +4,11 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Control, FieldValues, Path } from 'react-hook-form';
 import { Check, Plus } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { HobbyGlyph } from '@/src/app/components/brand/HobbyGlyph';
 import { motion, AnimatePresence } from 'framer-motion';
 import { tribeTone } from '@/src/app/utils/tribeColor';
 import { EditActions, EditButton } from './EditableField';
 import { cn } from '@/src/lib/utils';
-
-function resolveIcon(iconName: string | null): LucideIcon | null {
-    if (!iconName) return null;
-    const key = iconName.charAt(0).toUpperCase() + iconName.slice(1) as keyof typeof LucideIcons;
-    const icon = LucideIcons[key];
-    return typeof icon === 'function' ? (icon as LucideIcon) : null;
-}
-
-function HobbyIcon({ icon, className }: { icon: string | null; className?: string }) {
-    const Icon = resolveIcon(icon);
-    if (Icon) return <Icon aria-hidden="true" className={className} />;
-    return icon ? <span aria-hidden="true">{icon}</span> : null;
-}
 
 interface Hobby {
     id: string;
@@ -109,7 +95,7 @@ export function EditableHobbies<T extends FieldValues, Name extends Path<T> = Pa
                                 const tone = tribeTone(hobby.name);
                                 return (
                                     <span key={hobby.id} className={cn("inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-sm font-semibold", tone.soft, tone.ink)}>
-                                        <HobbyIcon icon={hobby.icon} className="size-4" />
+                                        <HobbyGlyph name={hobby.name} icon={hobby.icon} className="size-4" />
                                         {hobby.name}
                                     </span>
                                 );
@@ -161,7 +147,7 @@ export function EditableHobbies<T extends FieldValues, Name extends Path<T> = Pa
                                                     : "bg-card text-muted-foreground ring-1 ring-border hover:text-foreground hover:ring-muted-foreground/40"
                                             )}
                                         >
-                                            {selected ? <Check className="size-4" strokeWidth={2.5} /> : <HobbyIcon icon={hobby.icon} className="size-4" />}
+                                            {selected ? <Check className="size-4" strokeWidth={2.5} /> : <HobbyGlyph name={hobby.name} icon={hobby.icon} className="size-4" />}
                                             {hobby.name}
                                         </button>
                                     );
