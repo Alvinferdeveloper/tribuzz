@@ -1,16 +1,13 @@
 "use client"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Users, Share2, Check } from "lucide-react";
-import { Button } from "@/src/components/ui/button";
-import Image from "next/image";
-import { ThemeToggle } from "@/src/app/components/layout/ThemeToggle";
-import { RoomPresence } from "@/src/app/chat/[id]/components/RoomPresence";
+import { ArrowLeft, Share2, Check, Moon, Sun, Users } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
 import { RoomInfoDialog } from "@/src/app/chat/[id]/components/RoomInfoDialog";
 import { RoomInfo } from "@/src/app/chat/[id]/hooks/useRoomInfo";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { APP_NAME } from "@/src/app/constants";
 import { cn } from "@/src/lib/utils";
 import { tribeTone } from "@/src/app/utils/tribeColor";
 
@@ -27,33 +24,41 @@ interface ChatHeaderProps {
     isUserListVisible: boolean;
     onToggleUserList: () => void;
     usersInRoom?: User[];
+    typingUsers?: Set<string>;
 }
 
-function RoomIcon({ roomName, roomIcon }: { roomName: string; roomIcon?: string }) {
-    const [iconError, setIconError] = useState(false);
+// Floating "island": the header itself is transparent over the scene; only
+// these two groups get a glass surface, so the sky stays visible between them.
+const ISLAND = "pointer-events-auto flex items-center rounded-full bg-chat-chrome p-1 ring-1 ring-border/60 shadow-[var(--menu-shadow)] backdrop-blur-xl backdrop-saturate-150";
+const ICON_BTN = "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[background-color,color,transform] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.92] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
-    if (roomIcon && !iconError) {
-        return (
-            <img
-                src={roomIcon}
-                alt=""
-                className="size-7 rounded-lg object-cover shrink-0"
-                onError={() => setIconError(true)}
-            />
-        );
-    }
-
+function RoomBubble({ name, icon }: { name: string; icon?: string }) {
+    const [failed, setFailed] = useState(false);
+    const tone = tribeTone(name);
     return (
-        <span className={cn("size-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 select-none text-[oklch(0.2_0.04_265)]", tribeTone(roomName).fill)}>
-            {(roomName || '?').charAt(0).toUpperCase()}
+        <span className={cn("flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-[14px]", tone.fill, tone.tail)}>
+            {icon && !failed ? (
+                <img src={icon} alt="" className="h-full w-full object-cover" onError={() => setFailed(true)} />
+            ) : (
+                <span className="select-none text-sm font-bold text-[oklch(0.2_0.04_265)]">{(name || "?").charAt(0).toUpperCase()}</span>
+            )}
         </span>
     );
 }
 
-export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggleUserList, usersInRoom = [] }: ChatHeaderProps) {
+export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggleUserList, usersInRoom = [], typingUsers }: ChatHeaderProps) {
     const { t } = useTranslation();
     const [justCopied, setJustCopied] = useState(false);
     const [infoOpen, setInfoOpen] = useState(false);
+
+    const typing = Array.from(typingUsers ?? []);
+    const typingText = typing.length === 0
+        ? null
+        : typing.length === 1
+            ? t('chat.typing.single', { username: typing[0] })
+            : typing.length === 2
+                ? t('chat.typing.double', { user1: typing[0], user2: typing[1] })
+                : t('chat.typing.multiple');
 
     const handleShare = async () => {
         const url = `${window.location.origin}/chat/${roomId}`;
@@ -67,81 +72,69 @@ export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggle
         }
     };
 
+    const name = roomName || t('chat.header.room_fallback');
+
     return (
-        <header className="sticky top-0 z-50 h-14 sm:h-16 flex items-center justify-between px-3 sm:px-5 border-b border-border/60 bg-chat-chrome backdrop-blur-xl backdrop-saturate-150 gap-2">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <Link href="/tribus" className="shrink-0">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-9 text-muted-foreground hover:text-foreground hover:bg-accent active:scale-[0.92]"
-                        aria-label={t('chat.header.back')}
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                    </Button>
+        <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between gap-2 px-3 pt-3 sm:px-4">
+            <h1 className="sr-only">{name}</h1>
+            {/* Who and where: the tribe, who's here and what's happening right now. */}
+            <div className={cn(ISLAND, "min-w-0 gap-0.5 pr-1")}>
+                <Link href="/tribus" className={cn(ICON_BTN, "md:hidden")} aria-label={t('chat.header.back')}>
+                    <ArrowLeft className="size-4" />
                 </Link>
 
                 <button
                     onClick={() => room && setInfoOpen(true)}
                     disabled={!room}
-                    className="flex items-center gap-2.5 min-w-0 cursor-pointer disabled:cursor-default rounded-xl -mx-1.5 px-1.5 py-1 transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-[0.98] disabled:hover:bg-transparent disabled:active:scale-100"
                     aria-label={t('chat.header.room_info')}
+                    className="flex min-w-0 cursor-pointer items-center gap-2.5 rounded-full py-0.5 pl-0.5 pr-3 text-left transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-[0.98] disabled:cursor-default disabled:hover:bg-transparent disabled:active:scale-100"
                 >
-                    <RoomIcon roomName={roomName ?? ''} roomIcon={room?.server_icon} />
-
-                    <h1 className="text-sm sm:text-base font-semibold tracking-tight truncate">
-                        {roomName || t('chat.header.room_fallback')}
-                    </h1>
-
-                    <span className="relative flex w-1.5 h-1.5 sm:w-2 sm:h-2 shrink-0">
-                        <span className="absolute inline-flex w-full h-full rounded-full bg-presence/60 animate-ping motion-reduce:hidden" style={{ animationDuration: '2.4s' }} />
-                        <span className="relative inline-flex w-full h-full rounded-full bg-presence" />
+                    <RoomBubble name={name} icon={room?.server_icon} />
+                    <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold leading-tight tracking-tight">{name}</span>
+                        <span className="block truncate text-[11px] leading-tight text-muted-foreground" aria-live="polite">
+                            {typingText ? (
+                                <span className="font-medium text-primary">{typingText}</span>
+                            ) : (
+                                <>
+                                    <span className="mr-1 inline-block size-1.5 -translate-y-px rounded-full bg-presence align-middle" aria-hidden="true" />
+                                    {t('layout.rail.online', { count: usersInRoom.length })}
+                                    {room?.short_description && <span className="hidden sm:inline"> · {room.short_description}</span>}
+                                </>
+                            )}
+                        </span>
                     </span>
                 </button>
-
-                <RoomPresence users={usersInRoom} onClick={onToggleUserList} />
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleShare}
-                    aria-label={t('chat.header.share')}
-                    className="size-9 text-muted-foreground hover:text-foreground hover:bg-accent active:scale-[0.92]"
-                >
-                    {justCopied ? <Check className="h-4 w-4 text-presence" /> : <Share2 className="h-4 w-4" />}
-                </Button>
-
-                <Button
-                    variant="ghost"
-                    size="icon"
+            {/* Actions: people (opens the list), invite, theme on mobile. */}
+            <div className={cn(ISLAND, "shrink-0 gap-0.5")}>
+                <button
                     onClick={onToggleUserList}
                     aria-label={t('chat.header.show_participants')}
                     aria-pressed={isUserListVisible}
                     className={cn(
-                        "size-9 active:scale-[0.92]",
-                        isUserListVisible
-                            ? "bg-primary/12 text-primary hover:bg-primary/18 hover:text-primary"
-                            : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        "flex h-9 cursor-pointer items-center gap-1.5 rounded-full pl-1.5 pr-2.5 transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        isUserListVisible ? "bg-primary/12 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"
                     )}
                 >
-                    <Users className="h-4 w-4" />
-                </Button>
+                    <span className="hidden -space-x-2 sm:flex">
+                        {usersInRoom.slice(0, 3).map((u) => (
+                            <Avatar key={u.id} className="size-6 ring-2 ring-[var(--popover)]">
+                                <AvatarImage src={u.profileImage || `https://api.dicebear.com/9.x/avataaars/svg?seed=${u.username}`} alt="" />
+                                <AvatarFallback className={cn("text-[9px]", tribeTone(u.username).soft)}>{u.username.charAt(0).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                        ))}
+                    </span>
+                    <Users className="size-4 sm:hidden" />
+                    <span className="text-xs font-semibold tabular-nums">{usersInRoom.length}</span>
+                </button>
 
-                <div className="flex items-center px-1 sm:px-1.5">
-                    <ThemeToggle />
-                </div>
+                <button onClick={handleShare} aria-label={t('chat.header.share')} className={ICON_BTN}>
+                    {justCopied ? <Check className="size-4 text-presence" /> : <Share2 className="size-4" />}
+                </button>
 
-                <Link href="/" className="flex items-center shrink-0 ml-0.5">
-                    <Image
-                        src="/images/logo_chat.png"
-                        width={40}
-                        height={40}
-                        alt={APP_NAME}
-                        className="size-7 object-contain opacity-80 hover:opacity-100 transition-opacity duration-200"
-                    />
-                </Link>
+                <ThemeIconButton className="md:hidden" />
             </div>
 
             {room && (
@@ -153,5 +146,22 @@ export function ChatHeader({ roomId, roomName, room, isUserListVisible, onToggle
                 />
             )}
         </header>
+    );
+}
+
+function ThemeIconButton({ className }: { className?: string }) {
+    const { t } = useTranslation();
+    const { resolvedTheme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+    const isDark = mounted && resolvedTheme === "dark";
+    return (
+        <button
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+            aria-label={t('layout.theme.aria_label')}
+            className={cn(ICON_BTN, className)}
+        >
+            {mounted && (isDark ? <Sun className="size-4" /> : <Moon className="size-4" />)}
+        </button>
     );
 }

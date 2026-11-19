@@ -1,15 +1,15 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
-import { motion, AnimatePresence } from 'framer-motion';
+import { useMemo, useState } from 'react';
 import Link from "next/link";
-import { cn } from "@/src/lib/utils";
-import { Flag } from 'lucide-react';
-import { useState } from 'react';
-import { ReportUserDialog } from './ReportUserDialog';
-import { Button } from '@/src/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Flag, Search, X, UserPlus, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
+import { cn } from "@/src/lib/utils";
 import { tribeTone } from '@/src/app/utils/tribeColor';
+import { ReportUserDialog } from './ReportUserDialog';
 
 interface User {
     id: string;
@@ -21,40 +21,34 @@ interface UserListProps {
     users: User[];
     typingUsers: Set<string>;
     roomId?: string;
+    /** The viewer's own username: shown first and marked as "you". */
+    currentUsername?: string;
+    /** Closes the panel (mobile overlay, or collapsing it on desktop). */
+    onClose?: () => void;
 }
 
-const TypingDots = () => {
-    const dotVariants = {
-        initial: { y: 0 },
-        animate: { y: -3 }
-    };
+const SEARCH_THRESHOLD = 7;
 
-    const dotTransition = {
-        duration: 0.4,
-        repeat: Infinity,
-        repeatType: "reverse" as const
-    };
-
-    return (
-        <div className="flex gap-0.5 items-end h-3 mb-0.5 ml-1">
-            {[0, 1, 2].map((i) => (
-                <motion.div
-                    key={i}
-                    className="w-1 h-1 bg-tribe-teal-ink rounded-full"
-                    variants={dotVariants}
-                    initial="initial"
-                    animate="animate"
-                    transition={{ ...dotTransition, delay: i * 0.1 }}
-                />
-            ))}
-        </div>
-    );
-};
-
-export function UserList({ users, typingUsers, roomId }: UserListProps) {
+/**
+ * "Your tribe" panel. You first, then whoever is typing, then everyone else;
+ * each person wears their logo color around the avatar. Rows are single-line
+ * unless there is something worth saying (typing, guest). Search appears when
+ * the list gets long, and an invite button sits at the bottom.
+ */
+export function UserList({ users, typingUsers, roomId, currentUsername, onClose }: UserListProps) {
     const { t } = useTranslation();
+    const [query, setQuery] = useState('');
     const [reportDialogOpen, setReportDialogOpen] = useState(false);
     const [userToReport, setUserToReport] = useState<{ id: string, username: string } | null>(null);
+    const [copied, setCopied] = useState(false);
+
+    const ordered = useMemo(() => {
+        const rank = (u: User) => (u.username === currentUsername ? 0 : typingUsers.has(u.username) ? 1 : 2);
+        const q = query.trim().toLowerCase();
+        return users
+            .filter((u) => !q || u.username.toLowerCase().includes(q))
+            .sort((a, b) => rank(a) - rank(b));
+    }, [users, typingUsers, currentUsername, query]);
 
     const handleReportClick = (e: React.MouseEvent, user: User) => {
         e.preventDefault();
@@ -63,111 +57,147 @@ export function UserList({ users, typingUsers, roomId }: UserListProps) {
         setReportDialogOpen(true);
     };
 
-    const getInitials = (name: string) => {
-        return name.charAt(0).toUpperCase();
+    const handleInvite = async () => {
+        if (!roomId) return;
+        try {
+            await navigator.clipboard.writeText(`${window.location.origin}/chat/${roomId}`);
+            setCopied(true);
+            toast.success(t('chat.header.link_copied'));
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            toast.error(t('chat.header.link_copy_error'));
+        }
     };
 
     return (
-        <div className="bg-chat-chrome backdrop-blur-xl border-l border-border/60 h-full px-3 py-4 flex flex-col gap-3">
-            <h2 className="px-2 text-sm font-semibold flex items-center gap-2">
-                {t('chat.user_list.title')}
-                <span className="text-xs font-semibold tabular-nums bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                    {users.length}
-                </span>
-            </h2>
+        <div className="flex h-full flex-col border-l border-border/60 bg-chat-chrome backdrop-blur-xl">
+            {/* Same height as the chat header islands, so both edges line up. */}
+            <div className="flex h-[68px] shrink-0 items-center justify-between gap-2 px-4">
+                <h2 className="flex items-center gap-2 text-sm font-semibold">
+                    {t('chat.user_list.title')}
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
+                        {users.length}
+                    </span>
+                </h2>
+                {onClose && (
+                    <button
+                        onClick={onClose}
+                        aria-label={t('chat.user_list.close')}
+                        className="flex size-8 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[background-color,color,transform] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-90"
+                    >
+                        <X className="size-4" />
+                    </button>
+                )}
+            </div>
 
-            <div className="flex flex-col gap-0.5 overflow-y-auto scrollbar-thin-light">
-                <AnimatePresence mode="popLayout">
-                    {users.map((user, index) => {
+            {users.length >= SEARCH_THRESHOLD && (
+                <label className="mx-3 mb-2 flex h-9 shrink-0 items-center gap-2 rounded-full bg-card px-3 ring-1 ring-border/60 focus-within:ring-2 focus-within:ring-primary/50">
+                    <Search className="size-4 shrink-0 text-muted-foreground" />
+                    <span className="sr-only">{t('chat.user_list.search')}</span>
+                    <input
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder={t('chat.user_list.search')}
+                        className="h-full w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    />
+                </label>
+            )}
+
+            <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2 scrollbar-thin-light">
+                <AnimatePresence initial={false} mode="popLayout">
+                    {ordered.map((user) => {
                         const isTyping = typingUsers.has(user.username);
                         const isAnonymous = user.id === user.username;
+                        const isMe = user.username === currentUsername;
+                        const tone = tribeTone(user.username);
 
-                        const userContent = (
+                        const row = (
                             <motion.div
                                 layout
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0, transition: { delay: Math.min(index, 8) * 0.03, duration: 0.25, ease: [0.23, 1, 0.32, 1] } }}
-                                exit={{ opacity: 0, x: 10 }}
+                                initial={{ opacity: 0, transform: 'translateX(-8px)' }}
+                                animate={{ opacity: 1, transform: 'translateX(0px)' }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
                                 className={cn(
-                                    "group flex items-center gap-3 px-2 py-2 rounded-xl transition-colors duration-150",
-                                    !isAnonymous && "cursor-pointer hover:bg-accent",
-                                    isTyping && "bg-tribe-teal/10 hover:bg-tribe-teal/15"
+                                    "group flex min-h-12 items-center gap-3 rounded-2xl px-2 py-1.5 transition-colors duration-150",
+                                    !isAnonymous && !isMe && "cursor-pointer hover:bg-accent",
+                                    isMe && "bg-primary/[0.07]",
+                                    isTyping && "bg-tribe-teal/10"
                                 )}
                             >
-                                <div className="relative">
-                                    <Avatar className="h-9 w-9">
+                                <div className="relative shrink-0">
+                                    <Avatar className={cn("size-9 ring-2 ring-offset-2 ring-offset-[var(--popover)]", tone.ring)}>
                                         <AvatarImage
                                             src={user.profileImage || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.username}`}
-                                            alt={`${user.username}'s profile picture`}
+                                            alt=""
                                         />
-                                        <AvatarFallback className={tribeTone(user.username).soft}>
-                                            {getInitials(user.username)}
-                                        </AvatarFallback>
+                                        <AvatarFallback className={tone.soft}>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
                                     </Avatar>
-                                    <span className="absolute -bottom-0.5 -right-0.5 size-3 bg-presence ring-2 ring-background rounded-full" aria-hidden="true"></span>
+                                    <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-presence ring-2 ring-[var(--popover)]" aria-hidden="true" />
                                 </div>
 
-                                <div className="flex flex-col justify-center min-w-0 flex-1">
-                                    <span className={cn(
-                                        "font-semibold text-sm truncate leading-none mb-1 transition-colors",
-                                        !isAnonymous && "group-hover:text-foreground"
-                                    )}>
-                                        {user.username}
-                                    </span>
-
-                                    <div className="h-4 flex items-center">
-                                        <AnimatePresence mode="wait">
-                                            {isTyping ? (
-                                                <motion.div
-                                                    key="typing"
-                                                    initial={{ opacity: 0, y: 5 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -5 }}
-                                                    className="flex items-center text-xs text-tribe-teal-ink font-medium"
-                                                >
-                                                    <span>{t('chat.user_list.typing')}</span>
-                                                    <TypingDots />
-                                                </motion.div>
-                                            ) : (
-                                                <motion.span
-                                                    key="idle"
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    className="text-xs text-muted-foreground/70 truncate"
-                                                >
-                                                    {isAnonymous ? t('chat.user_list.guest') : t('chat.user_list.view_profile')}
-                                                </motion.span>
-                                            )}
-                                        </AnimatePresence>
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="truncate text-sm font-semibold">{user.username}</span>
+                                        {isMe && (
+                                            <span className="shrink-0 rounded-full bg-primary/12 px-1.5 py-px text-[10px] font-bold text-primary">
+                                                {t('chat.message.you')}
+                                            </span>
+                                        )}
                                     </div>
+                                    {isTyping ? (
+                                        <span className="flex items-center gap-1 text-xs font-medium text-tribe-teal-ink">
+                                            {t('chat.user_list.typing')}
+                                            <span className="flex gap-0.5" aria-hidden="true">
+                                                <span className="size-1 rounded-full bg-current animate-typing-dot" />
+                                                <span className="size-1 rounded-full bg-current animate-typing-dot [animation-delay:160ms]" />
+                                                <span className="size-1 rounded-full bg-current animate-typing-dot [animation-delay:320ms]" />
+                                            </span>
+                                        </span>
+                                    ) : isAnonymous ? (
+                                        <span className="text-xs text-muted-foreground">{t('chat.user_list.guest')}</span>
+                                    ) : null}
                                 </div>
 
-                                {!isAnonymous && (
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
+                                {!isAnonymous && !isMe && (
+                                    <button
                                         aria-label={t('chat.user_list.report', { username: user.username })}
-                                        className="size-8 transition-[opacity,background-color,color] [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                         onClick={(e) => handleReportClick(e, user)}
+                                        className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[opacity,background-color,color] duration-150 hover:bg-destructive/10 hover:text-destructive focus-visible:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                                     >
-                                        <Flag className="w-4 h-4" />
-                                    </Button>
+                                        <Flag className="size-4" />
+                                    </button>
                                 )}
                             </motion.div>
                         );
 
-                        if (isAnonymous) {
-                            return <div key={user.id}>{userContent}</div>;
+                        if (isAnonymous || isMe) {
+                            return <div key={user.id}>{row}</div>;
                         }
-
                         return (
-                            <Link key={user.id} href={`/profile/${encodeURIComponent(user.username)}`}>
-                                {userContent}
+                            <Link key={user.id} href={`/profile/${encodeURIComponent(user.username)}`} className="rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                {row}
                             </Link>
                         );
                     })}
                 </AnimatePresence>
+
+                {ordered.length === 0 && query && (
+                    <p className="px-3 py-6 text-center text-sm text-muted-foreground">{t('chat.user_list.no_results')}</p>
+                )}
             </div>
+
+            {roomId && (
+                <div className="shrink-0 border-t border-border/60 p-3">
+                    <button
+                        onClick={handleInvite}
+                        className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-primary/10 text-sm font-semibold text-primary transition-[background-color,transform] duration-150 ease-out hover:bg-primary/15 active:scale-[0.98]"
+                    >
+                        {copied ? <Check className="size-4" /> : <UserPlus className="size-4" />}
+                        {t('chat.user_list.invite')}
+                    </button>
+                </div>
+            )}
 
             <ReportUserDialog
                 isOpen={reportDialogOpen}

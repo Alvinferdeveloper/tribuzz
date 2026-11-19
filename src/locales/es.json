@@ -464,6 +464,10 @@
     "chat.user_list.guest": "Invitado",
     "chat.user_list.view_profile": "Ver perfil",
     "chat.user_list.report": "Reportar a {{username}}",
+    "chat.user_list.close": "Cerrar lista de la tribu",
+    "chat.user_list.search": "Buscar en la tribu",
+    "chat.user_list.no_results": "Nadie con ese nombre por aquí.",
+    "chat.user_list.invite": "Invitar a la tribu",
 
     "chat.typing.single": "{{username}} está escribiendo...",
     "chat.typing.double": "{{user1}} y {{user2}} están escribiendo...",

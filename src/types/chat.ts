@@ -17,6 +17,8 @@ export interface BaseMessage {
     replyTo: ReplyContext | null;
     reactions?: Reaction[];
     system?: boolean;
+    /** Set on local "X joined" timeline events (system messages). */
+    joinedUser?: string;
     edited?: boolean;
 }
 

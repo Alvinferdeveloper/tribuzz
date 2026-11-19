@@ -2,7 +2,8 @@
 import React from "react";
 import { Message } from "@/src/types/chat";
 import { ChatMessage } from "@/src/app/chat/[id]/components/ChatMessage";
-import { EmptyMessagesState } from "@/src/app/chat/[id]/components/EmptyMessagesState";
+import { ChatWelcome } from "@/src/app/chat/[id]/components/ChatWelcome";
+import { RoomInfo } from "@/src/app/chat/[id]/hooks/useRoomInfo";
 import { DateSeparator } from "@/src/app/chat/[id]/components/DateSeparator";
 import { isDifferentDay } from "@/src/app/chat/[id]/utils/time";
 
@@ -25,6 +26,7 @@ interface MessageListProps {
     toggleFavorite: (giphyId: string, url: string, title?: string) => void;
     onEdit?: (message: Message) => void;
     onDelete?: (messageId: string) => void;
+    room?: RoomInfo | null;
 }
 
 const GROUP_WINDOW_MS = 5 * 60 * 1000;
@@ -51,17 +53,10 @@ function needsDateSeparator(messages: Message[], index: number): boolean {
     return isDifferentDay(messages[index - 1].timestamp, messages[index].timestamp);
 }
 
-export function MessageList({ messages, username, messagesEndRef, openImageViewer, scrollToBottom, setReplyingToMessage, sendReaction, usersInRoom, favoriteGifs, toggleFavorite, onEdit, onDelete }: MessageListProps) {
-    if (messages.length === 0) {
-        return (
-            <div className="flex flex-col h-full min-h-[50vh]">
-                <EmptyMessagesState />
-            </div>
-        );
-    }
-
+export function MessageList({ messages, username, messagesEndRef, openImageViewer, scrollToBottom, setReplyingToMessage, sendReaction, usersInRoom, favoriteGifs, toggleFavorite, onEdit, onDelete, room }: MessageListProps) {
     return (
-        <div className="flex-1 p-4">
+        <div className="flex-1 px-4 pb-4 pt-[76px]">
+            {room && <ChatWelcome room={room} users={usersInRoom} isEmpty={messages.length === 0} />}
             <div>
                 {messages.map((msg, idx) => {
                     const showDateSeparator = needsDateSeparator(messages, idx);

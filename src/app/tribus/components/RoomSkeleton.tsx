@@ -2,7 +2,7 @@
 // text rows) so content replaces it without the grid shifting.
 export function RoomSkeleton() {
     return (
-        <div aria-hidden="true" className="flex h-full flex-col overflow-hidden rounded-[1.25rem] bg-card ring-1 ring-border/70">
+        <div aria-hidden="true" className="flex h-full flex-col overflow-hidden rounded-[10px] bg-card ring-1 ring-border/70">
             <div className="relative shrink-0">
                 <div className="h-[124px] w-full animate-pulse bg-muted" />
                 <div className="absolute -bottom-5 left-4">

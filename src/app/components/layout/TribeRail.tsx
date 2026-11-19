@@ -32,7 +32,9 @@ const BUBBLE_MOTION =
     "transition-[transform,background-color,color,box-shadow] duration-200 ease-out group-hover:scale-[1.06] group-hover:rotate-[4deg] motion-reduce:group-hover:rotate-0 motion-reduce:group-hover:scale-100";
 const BUBBLE_FOCUS = "group-focus-visible:ring-2 group-focus-visible:ring-primary group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-rail";
 
-export function TribeRail() {
+type CurrentRoom = { id: string; name: string; server_icon?: string };
+
+export function TribeRail({ currentRoom }: { currentRoom?: CurrentRoom } = {}) {
     const { t } = useTranslation();
     const pathname = usePathname();
     const { session } = useAuth();
@@ -67,7 +69,16 @@ export function TribeRail() {
                     </RailItem>
                 )}
 
-                {isLoggedIn && <FavoriteTribes pathname={pathname} />}
+                {isLoggedIn ? (
+                    <FavoriteTribes pathname={pathname} currentRoom={currentRoom} />
+                ) : currentRoom && (
+                    <>
+                        <RailDivider />
+                        <RailItem href={`/chat/${currentRoom.id}`} label={currentRoom.name} active>
+                            <TribeBubble name={currentRoom.name} icon={currentRoom.server_icon} online={0} active />
+                        </RailItem>
+                    </>
+                )}
 
                 <RailItem
                     href="/tribus/create"
@@ -97,7 +108,7 @@ export function TribeRail() {
     );
 }
 
-function FavoriteTribes({ pathname }: { pathname: string }) {
+function FavoriteTribes({ pathname, currentRoom }: { pathname: string; currentRoom?: CurrentRoom }) {
     const { t } = useTranslation();
     const { rooms: fetched } = useRoom('', 'favorites');
     const { userCounts } = useRoomUserCounts();
@@ -118,10 +129,14 @@ function FavoriteTribes({ pathname }: { pathname: string }) {
         });
     }), []);
 
-    const rooms = [
+    const favorites = [
         ...added.filter((a) => !fetched.some((r) => r.id === a.id)),
         ...fetched,
     ].filter((r) => !removed.has(r.id));
+    // The tribe you're chatting in always shows (first, if it isn't a favorite).
+    const rooms: CurrentRoom[] = currentRoom && !favorites.some((r) => r.id === currentRoom.id)
+        ? [currentRoom, ...favorites]
+        : favorites;
 
     return (
         <>
@@ -137,14 +152,16 @@ function FavoriteTribes({ pathname }: { pathname: string }) {
             <ul className="flex min-h-0 w-full flex-col items-center gap-2.5 overflow-y-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {rooms.map((room) => {
                     const online = userCounts[room.id] || 0;
+                    const active = pathname === `/chat/${room.id}`;
                     return (
                         <li key={room.id} className="w-full animate-in fade-in zoom-in-90 duration-200">
                             <RailItem
                                 href={`/chat/${room.id}`}
                                 label={room.name}
                                 hint={online > 0 ? t('layout.rail.online', { count: online }) : undefined}
+                                active={active}
                             >
-                                <TribeBubble name={room.name} icon={room.server_icon} online={online} />
+                                <TribeBubble name={room.name} icon={room.server_icon} online={online} active={active} />
                             </RailItem>
                         </li>
                     );
@@ -154,7 +171,7 @@ function FavoriteTribes({ pathname }: { pathname: string }) {
     );
 }
 
-function TribeBubble({ name, icon, online }: { name: string; icon?: string; online: number }) {
+function TribeBubble({ name, icon, online, active = false }: { name: string; icon?: string; online: number; active?: boolean }) {
     const [failed, setFailed] = useState(false);
     const tone = tribeTone(name);
     return (
@@ -162,8 +179,9 @@ function TribeBubble({ name, icon, online }: { name: string; icon?: string; onli
             <span className={cn(
                 "flex size-12 items-center justify-center overflow-hidden rounded-[18px]",
                 tone.fill, tone.tail, BUBBLE_MOTION, BUBBLE_FOCUS,
-                // Hover: a ring in the tribe's own color.
-                "ring-offset-2 ring-offset-rail group-hover:ring-2", tone.hoverRing
+                // Hover: a ring in the tribe's own color; kept on for the tribe you're in.
+                "ring-offset-2 ring-offset-rail group-hover:ring-2", tone.hoverRing,
+                active && cn("ring-2", tone.ringSolid)
             )}>
                 {icon && !failed ? (
                     <img src={icon} alt="" className="h-full w-full object-cover" onError={() => setFailed(true)} />

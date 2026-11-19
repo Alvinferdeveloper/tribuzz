@@ -15,7 +15,6 @@ import { useFavoriteGifs } from "@/src/app/chat/[id]/hooks/useFavoriteGifs";
 import { ChatConnecting } from "@/src/app/chat/[id]/components/ChatConnecting";
 import { ImagePreviewModal } from "@/src/app/chat/[id]/components/ImagePreviewModal";
 import { ImageViewerModal } from "@/src/app/chat/[id]/components/ImageViewerModal";
-import { UserJoinedNotification } from '@/src/app/chat/[id]/components/UserJoinedNotification';
 import { useImageHandling } from "@/src/app/chat/[id]/hooks/useImageHandling";
 import { UserList } from "@/src/app/chat/[id]/components/UserList";
 import { ScrollToBottomButton } from "@/src/app/chat/[id]/components/ScrollToBottomButton";
@@ -26,10 +25,9 @@ import { isTextMessage } from "@/src/types/chat";
 import { ConfirmDialog } from "@/src/app/components/shared/ConfirmDialog";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import CampfireBackground from "@/src/app/chat/[id]/components/CampfireBackground";
-import CampfireLottie from "@/src/app/chat/[id]/components/CampfireLottie";
-import ParkBackground from "@/src/app/chat/[id]/components/ParkBackground";
-import TreeIllustration from "@/src/app/chat/[id]/components/TreeIllustration";
+import ChatScene from "@/src/app/chat/[id]/components/ChatScene";
+import { TribeRail } from "@/src/app/components/layout/TribeRail";
+import { AuthPromptProvider } from "@/src/app/components/auth/AuthPrompt";
 
 export default function ChatPage() {
     const { t } = useTranslation();
@@ -45,7 +43,6 @@ export default function ChatPage() {
 
     const {
         messages,
-        notificationUser,
         usersInRoom,
         typingUsers,
         startTyping,
@@ -123,36 +120,34 @@ export default function ChatPage() {
     const currentTheme = resolvedTheme || theme;
 
     return (
-        <div className="flex flex-col h-dvh bg-transparent">
-            {mounted && (currentTheme === "light" ? <ParkBackground /> : <CampfireBackground />)}
-            {notificationUser && (
-                <UserJoinedNotification
-                    key={notificationUser}
-                    username={notificationUser}
+        <AuthPromptProvider>
+        {/* Desktop: the same tribe rail as the explorer, marking this tribe. */}
+        <TribeRail currentRoom={room ? { id: room.id, name: room.name, server_icon: room.server_icon } : undefined} />
+        <div className="flex flex-col h-dvh bg-transparent md:pl-[80px]">
+            {mounted && (
+                <ChatScene
+                    theme={currentTheme === "light" ? "day" : "night"}
+                    members={usersInRoom}
+                    accentName={roomName}
                 />
             )}
-            <ChatHeader
-                roomId={id as string}
-                roomName={roomName}
-                room={room}
-                isUserListVisible={isUserListVisible}
-                onToggleUserList={toggleUserList}
-                usersInRoom={usersInRoom}
-            />
             <div className="flex flex-1 overflow-hidden">
                 <main className="flex-1 flex flex-col relative">
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                        {mounted && (currentTheme === "light" ? (
-                            <TreeIllustration className="w-72 h-72 opacity-45" />
-                        ) : (
-                            hasHover && <CampfireLottie src="/illustrations/fire/animations/12345.json" className="w-64 h-64 opacity-70" />
-                        ))}
-                    </div>
+                    {/* Transparent header floating over the messages and the sky. */}
+                    <ChatHeader
+                        roomId={id as string}
+                        roomName={roomName}
+                        room={room}
+                        isUserListVisible={isUserListVisible}
+                        onToggleUserList={toggleUserList}
+                        usersInRoom={usersInRoom}
+                        typingUsers={typingUsers}
+                    />
                     {/* This wrapper never scrolls itself - it's the fixed anchor for the
                         floating scroll-to-bottom button, which would otherwise move with
                         the content if anchored to the scrollable pane below. */}
                     <div className="relative z-10 flex-1 overflow-hidden">
-                        <div className="h-full scrollbar-thin-light">
+                        <div className="h-full scrollbar-thin-light [mask-image:linear-gradient(to_bottom,transparent_0,black_72px)]">
                             <MessageList
                                 messages={messages}
                                 username={username}
@@ -166,6 +161,7 @@ export default function ChatPage() {
                                 toggleFavorite={toggleFavorite}
                                 onEdit={(msg) => setEditingMessage(msg)}
                                 onDelete={(id) => setDeleteConfirmId(id)}
+                                room={room}
                             />
                         </div>
                         <ScrollToBottomButton
@@ -206,7 +202,7 @@ export default function ChatPage() {
                 >
                     {/* Fixed inner width so the list slides instead of reflowing while the column animates. */}
                     <div className="w-[300px] h-full shrink-0">
-                        <UserList users={usersInRoom} typingUsers={typingUsers} />
+                        <UserList users={usersInRoom} typingUsers={typingUsers} roomId={id as string} currentUsername={username} onClose={toggleUserList} />
                     </div>
                 </aside>
 
@@ -218,7 +214,7 @@ export default function ChatPage() {
                             className="fixed inset-0 z-[60] bg-[color:var(--overlay)] animate-in fade-in duration-200"
                         />
                         <aside className="fixed top-0 right-0 z-[70] h-full w-[min(300px,85vw)] bg-background shadow-[-16px_0_40px_-16px_var(--shadow-tint)] animate-in slide-in-from-right duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]">
-                            <UserList users={usersInRoom} typingUsers={typingUsers} />
+                            <UserList users={usersInRoom} typingUsers={typingUsers} roomId={id as string} currentUsername={username} onClose={toggleUserList} />
                         </aside>
                     </>
                 )}
@@ -253,5 +249,6 @@ export default function ChatPage() {
                 variant="destructive"
             />
         </div>
+        </AuthPromptProvider>
     );
 }

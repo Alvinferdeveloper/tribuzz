@@ -83,7 +83,7 @@ export function RoomCard({
                     }
                 }}
                 className={cn(
-                    "group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-[1.25rem] bg-card text-card-foreground",
+                    "group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-[10px] bg-card text-card-foreground",
                     "ring-1 ring-border/70 shadow-[0_1px_2px_var(--shadow-tint)]",
                     "transition-[transform,box-shadow] duration-200 ease-out",
                     "[@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:shadow-[0_2px_4px_var(--shadow-tint),0_18px_36px_-18px_var(--shadow-tint)]",

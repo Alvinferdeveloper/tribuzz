@@ -180,6 +180,18 @@ export const ChatMessage = memo(function ChatMessage({ msg, username, openImageV
 
     // System and Global Announcement rendering
     if ((msg as any).system) {
+        if (msg.joinedUser) {
+            const tone = tribeTone(msg.joinedUser);
+            return (
+                <div className="w-full flex justify-center my-2 animate-in fade-in slide-in-from-bottom-1 duration-300">
+                    <div className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-chat-chrome backdrop-blur-md ring-1 ring-border/60 text-[11px] text-muted-foreground font-medium">
+                        <span aria-hidden="true" className={cn("size-4 rounded-[45%]", tone.fill, tone.tail)} />
+                        {t('chat.user_joined', { username: msg.joinedUser })}
+                    </div>
+                </div>
+            );
+        }
+
         if ((msg as any).isGlobal) {
             return (
                 <div

@@ -77,6 +77,18 @@ export const ChatProvider = ({ children, username }: ChatProviderProps) => {
         };
 
         const handleUserJoined = (data: { username: string }) => {
+            setMessages(prev => produce(prev, draft => {
+                draft.push({
+                    id: `join-${Date.now()}-${data.username}`,
+                    username: '',
+                    userProfileImage: null,
+                    timestamp: new Date().toISOString(),
+                    replyTo: null,
+                    system: true,
+                    joinedUser: data.username,
+                    message: '',
+                });
+            }));
             setNotificationUser(data.username);
             setTimeout(() => setNotificationUser(null), 4500);
         };

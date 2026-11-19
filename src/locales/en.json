@@ -464,6 +464,10 @@
     "chat.user_list.guest": "Guest",
     "chat.user_list.view_profile": "View profile",
     "chat.user_list.report": "Report {{username}}",
+    "chat.user_list.close": "Close tribe list",
+    "chat.user_list.search": "Search the tribe",
+    "chat.user_list.no_results": "Nobody here by that name.",
+    "chat.user_list.invite": "Invite to the tribe",
 
     "chat.typing.single": "{{username}} is typing...",
     "chat.typing.double": "{{user1}} and {{user2}} are typing...",
