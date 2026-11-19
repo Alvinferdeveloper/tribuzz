@@ -2,8 +2,14 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { Message } from "@/src/types/chat";
 
+/** Distance from the bottom (px) still counted as "at the bottom". */
+const NEAR_BOTTOM_PX = 150;
+
 export function useAutoScroll(messages: Message[]) {
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    // Callback ref: the list mounts after the "connecting" screen, so the
+    // pane has to be picked up whenever the end marker actually appears.
+    const [endMarker, setEndMarker] = useState<HTMLDivElement | null>(null);
+    const messagesEndRef = useCallback((node: HTMLDivElement | null) => setEndMarker(node), []);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const isNearBottomRef = useRef(true);
     const [isNearBottom, setIsNearBottom] = useState(true);
@@ -13,12 +19,16 @@ export function useAutoScroll(messages: Message[]) {
     const checkNearBottom = useCallback(() => {
         const container = containerRef.current;
         if (!container) return true;
-        const threshold = 150;
-        return container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
+        return container.scrollHeight - container.scrollTop - container.clientHeight < NEAR_BOTTOM_PX;
     }, []);
 
+    // Scrolls only the message pane. scrollIntoView() would also scroll every
+    // scrollable ancestor, including the page, which on iOS panned the whole
+    // chat and pulled the input away from the bottom.
     const scrollToBottom = useCallback((smooth = true) => {
-        messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "instant" });
+        const container = containerRef.current;
+        if (!container) return;
+        container.scrollTo({ top: container.scrollHeight, behavior: smooth ? "smooth" : "instant" });
     }, []);
 
     const jumpToBottom = useCallback(() => {
@@ -27,13 +37,10 @@ export function useAutoScroll(messages: Message[]) {
     }, [scrollToBottom]);
 
     useEffect(() => {
-        // Match the actual scrollable pane by its dedicated class, not a
-        // generic "overflow" substring: that matched an ancestor flex wrapper
-        // that clips (overflow-hidden) but never actually scrolls, so
-        // scrollTop there was always 0 and near-bottom detection was wrong.
-        const container = messagesEndRef.current?.closest('.scrollbar-thin-light') as HTMLDivElement | null;
+        // The scrollable pane is identified by its dedicated class (the
+        // overflow comes from it, not from a Tailwind overflow utility).
+        const container = endMarker?.closest('.scrollbar-thin-light') as HTMLDivElement | null;
         containerRef.current = container;
-
         if (!container) return;
 
         const handleScroll = () => {
@@ -43,11 +50,27 @@ export function useAutoScroll(messages: Message[]) {
             if (nearBottom) setUnreadCount(0);
         };
 
+        // Keep the latest message in view when the pane or its content
+        // changes size while the reader is at the bottom: keyboard opening,
+        // reply/edit bar appearing, images or reactions growing a message.
+        const resizeObserver = new ResizeObserver(() => {
+            if (isNearBottomRef.current) {
+                container.scrollTop = container.scrollHeight;
+            }
+        });
+        resizeObserver.observe(container);
+        if (container.firstElementChild) resizeObserver.observe(container.firstElementChild);
+
+        // Open the conversation at the latest message, without animating.
+        container.scrollTop = container.scrollHeight;
         container.addEventListener("scroll", handleScroll, { passive: true });
         handleScroll();
 
-        return () => container.removeEventListener("scroll", handleScroll);
-    }, [checkNearBottom]);
+        return () => {
+            container.removeEventListener("scroll", handleScroll);
+            resizeObserver.disconnect();
+        };
+    }, [endMarker, checkNearBottom]);
 
     useEffect(() => {
         const newMessageCount = messages.length - prevMessageCountRef.current;

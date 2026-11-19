@@ -16,7 +16,7 @@ interface User {
 interface MessageListProps {
     messages: Message[];
     username: string;
-    messagesEndRef: React.RefObject<HTMLDivElement | null>;
+    messagesEndRef: React.Ref<HTMLDivElement>;
     openImageViewer: (imageUrl: string) => void;
     scrollToBottom: () => void;
     setReplyingToMessage: (message: Message) => void;

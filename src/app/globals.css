@@ -336,6 +336,40 @@
 /* The tokens hold full color values (hsl()/oklch()), so wrapping them in
    hsl(var(...)) produced an invalid color and the thumb fell back to the
    browser default; color-mix works with any token format. */
+/* Chat screen pinned to the visible viewport (see useChatViewport). The page
+   itself can't scroll while the chat is open, so overscrolling the message
+   list never drags the input away from the bottom. `top` (not a transform)
+   follows iOS panning without turning the frame into a containing block for
+   its fixed children (mobile member list, scene). */
+html.chat-viewport-lock,
+html.chat-viewport-lock body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.chat-frame {
+  position: fixed;
+  inset-inline: 0;
+  top: var(--chat-vt, 0px);
+  height: var(--chat-vh, 100dvh);
+  /* Home-indicator padding for the input; not needed above the keyboard. */
+  --chat-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.chat-frame[data-keyboard="open"] {
+  --chat-safe-bottom: 0px;
+}
+
+/* Brief highlight when jumping to a replied-to message. */
+@keyframes message-flash {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  20%, 60% { box-shadow: 0 0 0 3px color-mix(in oklch, var(--tribe-sun) 85%, transparent); }
+}
+.message-flash { animation: message-flash 1.4s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .message-flash { animation: none; outline: 3px solid var(--tribe-sun); outline-offset: 2px; }
+}
+
 .scrollbar-thin-light {
   overflow-y: auto;
   scrollbar-width: thin;

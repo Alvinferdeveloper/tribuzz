@@ -186,7 +186,7 @@ export function MessageInput({
         e.preventDefault();
         handleSendMessage(e);
         
-        // Mantener el foco en el input para que no se cierre el teclado en móviles
+        // Keep focus on the input so the keyboard doesn't close on mobile.
         inputRef.current?.focus();
 
         if (isTyping) {
@@ -229,7 +229,7 @@ export function MessageInput({
     };
 
     return (
-        <div className="sticky bottom-0 z-30 px-3 sm:px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px)+var(--bottom-inset,0px))] border-t border-border/60 bg-chat-chrome backdrop-blur-xl backdrop-saturate-150">
+        <div className="relative z-30 shrink-0 px-3 sm:px-4 pt-3 pb-[calc(0.75rem+var(--chat-safe-bottom,env(safe-area-inset-bottom,0px)))] border-t border-border/60 bg-chat-chrome backdrop-blur-xl backdrop-saturate-150">
             {editingMessage && (
                 <div className="flex items-center justify-between gap-2 mb-2 pl-3 pr-1 py-1 text-sm rounded-2xl bg-primary/10 text-foreground animate-in fade-in slide-in-from-bottom-1 duration-200">
                     <div className="flex items-center gap-2 min-w-0">
@@ -345,6 +345,9 @@ export function MessageInput({
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter" && !e.shiftKey && !isMentionListVisible) {
                                             e.preventDefault();
+                                            // Enter that confirms an IME composition (Japanese,
+                                            // Chinese, Korean…) must not send; 229 covers Safari.
+                                            if (e.nativeEvent.isComposing || e.keyCode === 229) return;
                                             if (newMessage.trim()) {
                                                 onSubmit(e as any);
                                             }
@@ -411,7 +414,7 @@ export function MessageInput({
                                     type="submit"
                                     size="icon"
                                     disabled={!newMessage.trim()}
-                                    onMouseDown={(e) => e.preventDefault()}
+                                    onPointerDown={(e) => e.preventDefault()}
                                     aria-label={t('chat.input.save_edit')}
                                     className={cn(
                                         "flex-shrink-0 size-11 rounded-full active:scale-95 disabled:opacity-100",
@@ -438,7 +441,7 @@ export function MessageInput({
                                     type="submit"
                                     size="icon"
                                     disabled={!newMessage.trim()}
-                                    onMouseDown={(e) => e.preventDefault()} // Evita que el botón robe el foco del input
+                                    onPointerDown={(e) => e.preventDefault()} // keep focus on the input so the mobile keyboard stays open
                                     aria-label={t('chat.input.send')}
                                     className={cn(
                                         "flex-shrink-0 size-11 rounded-full active:scale-95 disabled:opacity-100",

@@ -101,6 +101,10 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
+  // Android Chrome/Firefox shrink the layout (and dvh) when the keyboard opens
+  // instead of panning the page, so bottom-anchored UI like the chat input
+  // sits right on top of the keyboard. iOS ignores it (see useChatViewport).
+  interactiveWidget: "resizes-content",
 };
 
 

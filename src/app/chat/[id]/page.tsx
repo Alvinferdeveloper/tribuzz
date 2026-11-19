@@ -28,6 +28,7 @@ import { useTranslation } from "react-i18next";
 import ChatScene from "@/src/app/chat/[id]/components/ChatScene";
 import { TribeRail } from "@/src/app/components/layout/TribeRail";
 import { AuthPromptProvider } from "@/src/app/components/auth/AuthPrompt";
+import { ChatFrame } from "@/src/app/chat/[id]/components/ChatFrame";
 
 export default function ChatPage() {
     const { t } = useTranslation();
@@ -123,7 +124,7 @@ export default function ChatPage() {
         <AuthPromptProvider>
         {/* Desktop: the same tribe rail as the explorer, marking this tribe. */}
         <TribeRail currentRoom={room ? { id: room.id, name: room.name, server_icon: room.server_icon } : undefined} />
-        <div className="flex flex-col h-dvh bg-transparent md:pl-[80px]">
+        <ChatFrame className="flex flex-col bg-transparent md:pl-[80px]">
             {mounted && (
                 <ChatScene
                     theme={currentTheme === "light" ? "day" : "night"}
@@ -147,7 +148,9 @@ export default function ChatPage() {
                         floating scroll-to-bottom button, which would otherwise move with
                         the content if anchored to the scrollable pane below. */}
                     <div className="relative z-10 flex-1 overflow-hidden">
-                        <div className="h-full scrollbar-thin-light [mask-image:linear-gradient(to_bottom,transparent_0,black_72px)]">
+                        {/* overscroll-contain: the rubber band stays inside the list
+                            instead of chaining to the page and moving the input. */}
+                        <div className="h-full scrollbar-thin-light overscroll-y-contain [mask-image:linear-gradient(to_bottom,transparent_0,black_72px)]">
                             <MessageList
                                 messages={messages}
                                 username={username}
@@ -248,7 +251,7 @@ export default function ChatPage() {
                 cancelText={t('chat.confirm_delete.cancel')}
                 variant="destructive"
             />
-        </div>
+        </ChatFrame>
         </AuthPromptProvider>
     );
 }
