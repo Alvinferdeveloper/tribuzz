@@ -487,6 +487,14 @@
     "chat.image_preview.placeholder": "Añade una descripción...",
 
     "chat.image_viewer.alt": "Visor de imagen",
+    "chat.image_preview.title": "Enviar imagen",
+    "chat.image_preview.description": "Revisa la imagen y añade una descripción antes de enviarla.",
+    "chat.image_preview.alt": "Imagen que vas a enviar",
+    "chat.image_preview.sending": "Enviando imagen…",
+    "chat.image_preview.send": "Enviar imagen",
+    "chat.image_viewer.description": "Imagen ampliada. Pulsa Escape para cerrar.",
+    "chat.image_viewer.open_original": "Abrir la imagen original",
+    "chat.image_viewer.close": "Cerrar",
 
     "chat.gif_picker.favorites": "Favoritos",
     "chat.gif_picker.explore": "Explorar",

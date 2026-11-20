@@ -487,6 +487,14 @@
     "chat.image_preview.placeholder": "Add a description...",
 
     "chat.image_viewer.alt": "Image viewer",
+    "chat.image_preview.title": "Send image",
+    "chat.image_preview.description": "Check the image and add a caption before sending it.",
+    "chat.image_preview.alt": "Image you're about to send",
+    "chat.image_preview.sending": "Sending image…",
+    "chat.image_preview.send": "Send image",
+    "chat.image_viewer.description": "Enlarged image. Press Escape to close.",
+    "chat.image_viewer.open_original": "Open the original image",
+    "chat.image_viewer.close": "Close",
 
     "chat.gif_picker.favorites": "Favorites",
     "chat.gif_picker.explore": "Explore",
