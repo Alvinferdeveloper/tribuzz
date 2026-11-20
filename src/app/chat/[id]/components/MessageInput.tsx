@@ -1,4 +1,5 @@
 "use client"
+import { IMAGE_ACCEPT } from "@/src/lib/uploads";
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
@@ -333,7 +334,7 @@ export function MessageInput({
                                         ref={fileInputRef}
                                         onChange={onFileChange}
                                         className="hidden"
-                                        accept="image/*"
+                                        accept={IMAGE_ACCEPT}
                                     />
                                 </>
                             )}

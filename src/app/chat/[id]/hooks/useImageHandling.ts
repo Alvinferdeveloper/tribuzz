@@ -1,9 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useSocket } from "@/src/app/components/providers/SocketEventProvider";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { checkUpload } from "@/src/lib/uploads";
 
 export function useImageHandling() {
     const socket = useSocket();
+    const { t } = useTranslation();
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [description, setDescription] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -11,6 +15,12 @@ export function useImageHandling() {
     const [isUploading, setIsUploading] = useState(false);
 
     const handleImageSelect = (file: File) => {
+        // Same rules as the server: say so now rather than after the upload fails.
+        const problem = checkUpload(file, 'image');
+        if (problem) {
+            toast.error(t(problem.code, problem.code === 'uploads.too_large' ? { max: problem.maxMb } : undefined));
+            return;
+        }
         setSelectedImageFile(file);
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -67,6 +77,7 @@ export function useImageHandling() {
         // Step 1: Request Upload URL
         socket.emit('request-chat-image-upload', {
             contentType: fileToUpload.type,
+            size: fileToUpload.size,
             tempId
         });
 
@@ -98,6 +109,7 @@ export function useImageHandling() {
 
             } catch (error) {
                 console.error("Image upload error:", error);
+                toast.error(t('uploads.failed'));
             }
         };
 

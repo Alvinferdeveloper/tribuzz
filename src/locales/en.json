@@ -1093,5 +1093,8 @@
     "onboarding.conversation.bio_placeholder": "What you like to do, what you're looking for on Tribuzz…",
     "onboarding.done.title": "All set, {{name}}!",
     "onboarding.done.text": "Your profile is ready. Now let's find the tribe you'll want to stay in.",
-    "onboarding.done.cta": "Explore tribes"
+    "onboarding.done.cta": "Explore tribes",
+    "uploads.unsupported": "That file type can't be sent. Use JPG, PNG, WEBP or GIF.",
+    "uploads.too_large": "The file is too large. The maximum is {{max}} MB.",
+    "uploads.failed": "Couldn't upload the file. Please try again."
 }

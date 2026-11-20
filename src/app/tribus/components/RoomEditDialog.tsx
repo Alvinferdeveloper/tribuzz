@@ -1,5 +1,6 @@
 'use client';
 
+import { IMAGE_ACCEPT } from "@/src/lib/uploads";
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -148,8 +149,8 @@ export function RoomEditDialog({ room, open, onOpenChange, onUpdate, onUpdateCat
                         >
                             {uploading === 'icon' ? <BubbleLoader size="sm" mono /> : <IconBubbleCamera className="size-4" />}
                         </button>
-                        <input type="file" ref={bannerInputRef} onChange={(e) => pickImage(e, 'banner')} className="hidden" accept="image/*" />
-                        <input type="file" ref={iconInputRef} onChange={(e) => pickImage(e, 'icon')} className="hidden" accept="image/*" />
+                        <input type="file" ref={bannerInputRef} onChange={(e) => pickImage(e, 'banner')} className="hidden" accept={IMAGE_ACCEPT} />
+                        <input type="file" ref={iconInputRef} onChange={(e) => pickImage(e, 'icon')} className="hidden" accept={IMAGE_ACCEPT} />
                     </div>
 
                     <div className="px-5 pb-6 pt-10 sm:px-7">

@@ -1,5 +1,6 @@
 'use client';
 
+import { IMAGE_ACCEPT } from "@/src/lib/uploads";
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCreateRoom } from '../hooks/useCreateRoom';
@@ -83,7 +84,7 @@ export function CustomizeRoom({ room, onImagesChange }: CustomizeRoomProps) {
                 {/* Banner */}
                 <section className="mt-6 space-y-2.5">
                     <UploadLabel label={t('rooms.create.customize.banner_label')} hint={t('rooms.create.customize.banner_size')} selected={!!bannerPreview} />
-                    <input type="file" ref={bannerInputRef} onChange={(e) => handleFileChange(e, 'banner')} className="hidden" accept="image/*" />
+                    <input type="file" ref={bannerInputRef} onChange={(e) => handleFileChange(e, 'banner')} className="hidden" accept={IMAGE_ACCEPT} />
                     <button
                         type="button"
                         onClick={() => bannerInputRef.current?.click()}
@@ -114,7 +115,7 @@ export function CustomizeRoom({ room, onImagesChange }: CustomizeRoomProps) {
                 {/* Icon: same squircle-with-a-tail shape the card gives it. */}
                 <section className="mt-6 space-y-2.5">
                     <UploadLabel label={t('rooms.create.customize.icon_label')} hint={t('rooms.create.customize.icon_size_hint')} selected={!!iconPreview} />
-                    <input type="file" ref={iconInputRef} onChange={(e) => handleFileChange(e, 'icon')} className="hidden" accept="image/*" />
+                    <input type="file" ref={iconInputRef} onChange={(e) => handleFileChange(e, 'icon')} className="hidden" accept={IMAGE_ACCEPT} />
                     <div className="flex items-center gap-4">
                         <button
                             type="button"

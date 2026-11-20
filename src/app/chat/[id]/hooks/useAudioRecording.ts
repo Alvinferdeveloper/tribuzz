@@ -1,9 +1,13 @@
 "use client";
 import { useState, useRef } from "react";
 import { useSocket } from "@/src/app/components/providers/SocketEventProvider";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { checkUpload } from "@/src/lib/uploads";
 
 export function useAudioRecording() {
     const socket = useSocket();
+    const { t } = useTranslation();
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -23,7 +27,8 @@ export function useAudioRecording() {
             };
 
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+                // The recorder's real format: Safari records MP4, not WebM.
+                const blob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
                 setAudioBlob(blob);
                 stream.getTracks().forEach(track => track.stop());
             };
@@ -89,6 +94,7 @@ export function useAudioRecording() {
         // 1. Request Upload URL
         socket.emit('request-chat-image-upload', {
             contentType: audioBlob.type,
+            size: audioBlob.size,
             tempId
         });
 
@@ -116,6 +122,7 @@ export function useAudioRecording() {
                 });
             } catch (err) {
                 console.error("Audio upload error:", err);
+                toast.error(t('uploads.failed'));
             }
         };
 

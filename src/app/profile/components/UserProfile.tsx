@@ -18,6 +18,7 @@ import { tribeTone, type TribeToneKey } from '@/src/app/utils/tribeColor';
 import { ConversationGlyph, type ConversationType } from '@/src/app/components/brand/ConversationGlyph';
 import { BubbleLoader } from "@/src/components/ui/bubble-loader";
 import { cn } from '@/src/lib/utils';
+import { IMAGE_ACCEPT } from '@/src/lib/uploads';
 
 const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 
@@ -99,7 +100,7 @@ export function UserProfile({ targetUsername }: { targetUsername?: string }) {
                     ref={fileInputRef}
                     onChange={onFileChange}
                     className="hidden"
-                    accept="image/png, image/jpeg, image/gif, image/webp"
+                    accept={IMAGE_ACCEPT}
                 />
             )}
 
